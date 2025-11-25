@@ -37,31 +37,7 @@ let allMissions = [];
 let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
 
-/********************************************************************
- *  INIT
- ********************************************************************/
-window.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("pickRoot");
-  if (!btn) return;
 
-  btn.addEventListener("click", async () => {
-    try {
-      const rootHandle = await window.showDirectoryPicker();
-      document.getElementById("rootInfo").textContent =
-        "Dossier racine : " + rootHandle.name;
-
-      const missions = await scanRootFolder(rootHandle);
-      allMissions = missions;
-
-      renderFilterButtons();
-      renderFilterValues();
-      renderMissionsTable();
-    } catch (err) {
-      console.error(err);
-      alert("Impossible d’ouvrir le dossier. Vérifie les droits du navigateur.");
-    }
-  });
-});
 
 /********************************************************************
  *  LECTURE FICHIERS & SCAN
