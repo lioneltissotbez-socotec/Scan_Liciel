@@ -1,10 +1,11 @@
 /********************************************************************
- *  INITIALISATION BOUTON
+ *  INITIALISATION : bouton “Choisir un dossier”
  ********************************************************************/
 window.addEventListener("DOMContentLoaded", () => {
+
     const btn = document.getElementById("pickFolder");
     if (!btn) {
-        console.warn("⛔ Bouton #pickFolder introuvable dans le HTML");
+        console.warn("⚠️ Bouton #pickFolder introuvable.");
         return;
     }
 
@@ -13,16 +14,14 @@ window.addEventListener("DOMContentLoaded", () => {
             const rootHandle = await window.showDirectoryPicker();
             document.getElementById("folderName").textContent = "📁 " + rootHandle.name;
 
-            // 🔥 scanne tous les dossiers enfants
             const missions = await scanRootFolder(rootHandle);
-
             console.log("MISSIONS DÉTECTÉES :", missions);
-            window.allMissions = missions;
 
+            window.allMissions = missions;
             renderMissionsTable(missions);
         }
         catch (err) {
-            console.error("Erreur de sélection dossier :", err);
+            console.error("Erreur :", err);
             alert("Impossible d’ouvrir le dossier.");
         }
     });
@@ -30,9 +29,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 /********************************************************************
- *  SCAN DES DOSSIERS LICIEL
+ *  SCAN RACINE DES MISSIONS
  ********************************************************************/
-
 async function readFileCorrectly(fileHandle) {
     const file = await fileHandle.getFile();
     const buffer = await file.arrayBuffer();
@@ -54,16 +52,19 @@ async function scanRootFolder(rootHandle) {
     return missions;
 }
 
+
 /********************************************************************
- *  PARSE UNE MISSION
+ *  PARSE D’UN DOSSIER DE MISSION
  ********************************************************************/
 async function parseMissionDirectory(dirHandle, folderName) {
+
     let general = null;
     let conclusions = null;
     let descGeneral = null;
     let photos = [];
     let domainConclusions = [];
 
+    // trouver un éventuel sous-dossier XML/
     let xmlDir = null;
     for await (const [n, h] of dirHandle.entries()) {
         if (h.kind === "directory" && n.toLowerCase() === "xml") {
@@ -95,7 +96,7 @@ async function parseMissionDirectory(dirHandle, folderName) {
             domainConclusions = parseZConclusions(await readFileCorrectly(fileHandle));
     }
 
-    if (!general) return null; // pas une mission LICIEL complète
+    if (!general) return null; // pas une mission LICIEL
 
     return {
         id: folderName,
@@ -108,8 +109,9 @@ async function parseMissionDirectory(dirHandle, folderName) {
     };
 }
 
+
 /********************************************************************
- *  PARSE DES TABLES SIMPLES LICIEL
+ *  PARSEURS
  ********************************************************************/
 function parseGeneralBien(xmlText) {
     const xml = new DOMParser().parseFromString(xmlText, "text/xml");
@@ -132,14 +134,13 @@ function parseGeneralBienConclusions(xmlText) {
 function parseGeneralDescription(xmlText) {
     const xml = new DOMParser().parseFromString(xmlText, "text/xml");
     const o = {};
-    [...xml.documentElement.children].forEach(n => {
-        o[n.tagName] = n.textContent.trim();
-    });
+    [...xml.documentElement.children].forEach(n => o[n.tagName] = n.textContent.trim());
     return o;
 }
 
 function parsePhotos(xmlText) {
     const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+
     return [...xml.documentElement.children].map(n => {
         const photo = {};
         [...n.children].forEach(c => photo[c.tagName] = c.textContent.trim());
@@ -156,8 +157,28 @@ function parseZConclusions(xmlText) {
     });
 }
 
+
 /********************************************************************
- *  AFFICHAGE LISTE MISSIONS
+ *  DÉTECTION DES DOMAINES
+ ********************************************************************/
+function detectDomains(mission) {
+    const result = [];
+
+    if (mission.conclusions?.length)
+        result.push("Administratif");
+
+    if (mission.domainConclusions?.some(d => d.Etat_Amiante || d.Conclusion_Amiante))
+        result.push("Amiante");
+
+    if (mission.domainConclusions?.some(d => d.CREP_Classement))
+        result.push("Plomb");
+
+    return result;
+}
+
+
+/********************************************************************
+ *  TABLEAU DES MISSIONS
  ********************************************************************/
 function renderMissionsTable(missions) {
     const container = document.getElementById("missionsList");
@@ -182,6 +203,7 @@ function renderMissionsTable(missions) {
     `;
 
     missions.forEach(m => {
+
         html += `
         <tr>
             <td>
@@ -206,26 +228,9 @@ function renderMissionsTable(missions) {
     );
 }
 
-/********************************************************************
- *  DÉTECTION DES DOMAINES
- ********************************************************************/
-function detectDomains(mission) {
-    const result = [];
-
-    if (mission.conclusions?.length)
-        result.push("Administratif");
-
-    if (mission.domainConclusions?.some(d => d.Etat_Amiante || d.Conclusion_Amiante))
-        result.push("Amiante");
-
-    if (mission.domainConclusions?.some(d => d.CREP_Classement))
-        result.push("Plomb (CREP)");
-
-    return result;
-}
 
 /********************************************************************
- *  DETAIL MISSION (corrigé : affiche seulement domaines présents)
+ *  DÉTAIL D’UNE MISSION
  ********************************************************************/
 function showMissionDetail(id) {
     const mission = window.allMissions.find(m => m.id === id);
@@ -233,7 +238,7 @@ function showMissionDetail(id) {
 
     let html = `<h2>Détail mission : ${escapeHtml(id)}</h2>`;
 
-    /* ADMINISTRATIF */
+    // ADMINISTRATIF
     if (mission.general) {
         html += `<h3>Informations générales</h3><div class="detailBlock">`;
         for (const [k,v] of Object.entries(mission.general))
@@ -241,7 +246,7 @@ function showMissionDetail(id) {
         html += `</div>`;
     }
 
-    /* DESCRIPTION */
+    // DESCRIPTION
     if (mission.descGeneral) {
         html += `<h3>Description générale</h3><div class="detailBlock">`;
         for (const [k,v] of Object.entries(mission.descGeneral))
@@ -249,43 +254,40 @@ function showMissionDetail(id) {
         html += `</div>`;
     }
 
-    /* CONCLUSIONS ADMIN */
+    // CONCLUSIONS ADMIN
     if (mission.conclusions?.length) {
-        const filtered = mission.conclusions.filter(c =>
-            Object.values(c).some(v=>v && v.trim())
-        );
-        if (filtered.length) {
-            html += `<h3>Conclusions administratives</h3><div class="detailBlock">`;
-            filtered.forEach(c => {
-                for (const [k,v] of Object.entries(c))
-                    if (v && v.trim()) html += `<p><b>${escapeHtml(k)} :</b> ${escapeHtml(v)}</p>`;
-                html += `<hr>`;
-            });
-            html += `</div>`;
-        }
-    }
-
-    /* CONCLUSIONS (Amiante / CREP / etc.) */
-    const z = mission.domainConclusions?.filter(
-        d => Object.values(d).some(v=>v && v.trim())
-    );
-
-    if (z?.length) {
-        html += `<h3>Conclusions des repérages</h3>`;
-        z.forEach(d => {
+        html += `<h3>Conclusions administratives</h3>`;
+        mission.conclusions.forEach(c => {
             html += `<div class="detailBlock">`;
-            for (const [k,v] of Object.entries(d))
+            for (const [k,v] of Object.entries(c))
                 if (v && v.trim()) html += `<p><b>${escapeHtml(k)} :</b> ${escapeHtml(v)}</p>`;
             html += `</div>`;
         });
     }
 
-    /* PHOTOS */
+    // DOMAINES (Amiante / CREP / etc.)
+    if (mission.domainConclusions?.length) {
+        const filtered = mission.domainConclusions.filter(
+            d => Object.values(d).some(v => v && v.trim())
+        );
+        if (filtered.length) {
+            html += `<h3>Conclusions des repérages</h3>`;
+            filtered.forEach(d => {
+                html += `<div class="detailBlock">`;
+                for (const [k,v] of Object.entries(d))
+                    if (v && v.trim()) html += `<p><b>${escapeHtml(k)} :</b> ${escapeHtml(v)}</p>`;
+                html += `</div>`;
+            });
+        }
+    }
+
+    // PHOTOS
     if (mission.photos?.length) {
         html += `<h3>Photographies</h3><div class="photoGrid">`;
         mission.photos.forEach(p => {
             if (p.Photo_Clef) {
-                html += `<div class="photoItem">
+                html += `
+                <div class="photoItem">
                     <img src="${p.Photo_Clef}" />
                     <p>${escapeHtml(p.Photo_Commentaire || "")}</p>
                 </div>`;
@@ -297,8 +299,9 @@ function showMissionDetail(id) {
     document.getElementById("detailPane").innerHTML = html;
 }
 
+
 /********************************************************************
- *  TOOLBOX
+ *  UTILITAIRE
  ********************************************************************/
 function escapeHtml(str) {
     return (str || "").replace(/[&<>"']/g, c => ({
