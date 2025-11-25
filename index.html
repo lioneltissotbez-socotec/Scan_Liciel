@@ -1,82 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Explorateur missions LICIEL – Administratif</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Scan LICIEL - Dashboard</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="app-header">
-  <h1>📂 Explorateur missions LICIEL – Vue administrative</h1>
-  <p class="subtitle">
-    1️⃣ Choisissez le dossier racine contenant vos missions LICIEL.<br>
-    2️⃣ Filtrez par donneur d'ordre, propriétaire, diagnostiqueur, ville, rue ou bâtiment.<br>
-    3️⃣ Consultez le détail administratif et les conclusions par mission.
-  </p>
-</header>
-
-<main>
-  <!-- Choix du dossier racine -->
-  <section class="card">
-    <h2>1. Sélection du dossier racine</h2>
-    <p>Le dossier sélectionné doit contenir plusieurs dossiers de mission (ex : <code>2501CHNLI - BI11830000001835</code>), chaque mission contenant un sous-dossier <code>XML</code>.</p>
-    <button id="pickRootBtn">Choisir le dossier racine</button>
-    <p id="rootInfo" class="muted"></p>
-    <p id="scanStatus" class="status"></p>
-  </section>
-
-  <!-- Filtres dimensionnels -->
-  <section class="card" id="filtersCard" style="display:none;">
-    <h2>2. Filtres</h2>
-    <p>Choisissez une façon de regrouper les missions. Le nombre indiqué correspond au nombre de valeurs distinctes pour chaque critère.</p>
-    <div class="filter-buttons">
-      <button class="filter-dimension" data-dim="donneur">Donneur d'ordre (<span data-count="donneur">0</span>)</button>
-      <button class="filter-dimension" data-dim="proprietaire">Propriétaire (<span data-count="proprietaire">0</span>)</button>
-      <button class="filter-dimension" data-dim="diagnostiqueur">Diagnostiqueur (<span data-count="diagnostiqueur">0</span>)</button>
-      <button class="filter-dimension" data-dim="ville">Ville (<span data-count="ville">0</span>)</button>
-      <button class="filter-dimension" data-dim="rue">Rue (<span data-count="rue">0</span>)</button>
-      <button class="filter-dimension" data-dim="batiment">Bâtiment / Loc. copro (<span data-count="batiment">0</span>)</button>
-    </div>
-
-    <div id="filterValuesContainer" class="filter-values" style="display:none;">
-      <h3 id="filterValuesTitle"></h3>
-      <div class="filter-values-buttons" id="filterValuesButtons"></div>
-    </div>
-  </section>
-
-  <!-- Tableau des missions -->
-  <section class="card" id="missionsCard" style="display:none;">
-    <h2>3. Missions administratives</h2>
-    <p id="missionsSummary" class="muted"></p>
-    <div class="table-wrapper">
-      <table id="missionsTable">
-        <thead>
-          <tr>
-            <th>Dossier</th>
-            <th>Adresse</th>
-            <th>Ville</th>
-            <th>Bâtiment / Loc.</th>
-            <th>Donneur d'ordre</th>
-            <th>Propriétaire</th>
-            <th>Diagnostiqueur</th>
-            <th>Date visite</th>
-            <th>Domaines</th>
-            <th>Détail</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Détail mission -->
-  <section class="card" id="detailCard" style="display:none;">
-    <h2>Détail de la mission</h2>
-    <div id="detailContent"></div>
-  </section>
-</main>
-
+<h1>Scan LICIEL — Dashboard</h1>
+<p>Point de départ pour les modules : Administratif, Amiante, Plomb, DPE, Électricité, Gaz, Mesurages, Termites.</p>
+<div class="domains">
+  <a href="admin.html">Administratif</a>
+  <a href="amiante.html">Amiante</a>
+  <a href="plomb.html">Plomb</a>
+  <a href="dpe.html">DPE</a>
+  <a href="electricite.html">Électricité</a>
+  <a href="gaz.html">Gaz</a>
+  <a href="mesurages.html">Mesurages</a>
+  <a href="termites.html">Termites</a>
+</div>
 <script src="app.js"></script>
 </body>
 </html>
