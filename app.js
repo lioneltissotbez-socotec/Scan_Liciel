@@ -1,4 +1,35 @@
 /********************************************************************
+ *  INITIALISATION BOUTON
+ ********************************************************************/
+window.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("pickFolder");
+    if (!btn) {
+        console.warn("⛔ Bouton #pickFolder introuvable dans le HTML");
+        return;
+    }
+
+    btn.addEventListener("click", async () => {
+        try {
+            const rootHandle = await window.showDirectoryPicker();
+            document.getElementById("folderName").textContent = "📁 " + rootHandle.name;
+
+            // 🔥 scanne tous les dossiers enfants
+            const missions = await scanRootFolder(rootHandle);
+
+            console.log("MISSIONS DÉTECTÉES :", missions);
+            window.allMissions = missions;
+
+            renderMissionsTable(missions);
+        }
+        catch (err) {
+            console.error("Erreur de sélection dossier :", err);
+            alert("Impossible d’ouvrir le dossier.");
+        }
+    });
+});
+
+
+/********************************************************************
  *  SCAN DES DOSSIERS LICIEL
  ********************************************************************/
 
