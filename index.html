@@ -1,23 +1,55 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Scan LICIEL - Dashboard</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Scan LICIEL – Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<h1>Scan LICIEL — Dashboard</h1>
-<p>Point de départ pour les modules : Administratif, Amiante, Plomb, DPE, Électricité, Gaz, Mesurages, Termites.</p>
-<div class="domains">
-  <a href="admin.html">Administratif</a>
-  <a href="amiante.html">Amiante</a>
-  <a href="plomb.html">Plomb</a>
-  <a href="dpe.html">DPE</a>
-  <a href="electricite.html">Électricité</a>
-  <a href="gaz.html">Gaz</a>
-  <a href="mesurages.html">Mesurages</a>
-  <a href="termites.html">Termites</a>
-</div>
-<script src="app.js"></script>
+<header class="topbar">
+  <div class="topbar-title">Scan LICIEL</div>
+  <div class="topbar-subtitle">Explorateur de missions</div>
+</header>
+
+<main class="dashboard">
+  <section class="card">
+    <h1>Modules disponibles</h1>
+    <p>Sélectionne un domaine pour analyser les dossiers LICIEL.</p>
+    <div class="domain-grid">
+      <a class="domain-card" href="admin.html">
+        <span class="domain-title">Administratif</span>
+        <span class="domain-desc">Donneur d'ordre, propriétaire, adresse, synthèses…</span>
+      </a>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Amiante</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Plomb (CREP)</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">DPE</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Électricité</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Gaz</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Mesurages</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+      <div class="domain-card domain-disabled">
+        <span class="domain-title">Termites</span>
+        <span class="domain-desc">Bientôt disponible</span>
+      </div>
+    </div>
+  </section>
+</main>
 </body>
 </html>
