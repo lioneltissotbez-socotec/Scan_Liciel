@@ -1,13 +1,54 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Administratif</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Scan LICIEL – Administratif</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<h1>Administratif</h1>
-<p>Module en construction...</p>
-<a href="index.html">⬅ Retour Dashboard</a>
+<header class="topbar">
+  <div class="topbar-title">Scan LICIEL</div>
+  <div class="topbar-subtitle">Module Administratif</div>
+  <a class="topbar-link" href="index.html">⬅ Retour Dashboard</a>
+</header>
+
+<main class="layout">
+  <aside class="sidebar">
+    <section class="card">
+      <h2>1. Dossiers LICIEL</h2>
+      <button id="pickRoot" class="primary-btn">Choisir le dossier racine</button>
+      <p id="rootInfo" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>2. Filtres</h2>
+      <div id="filterButtons" class="filter-buttons"></div>
+    </section>
+
+    <section class="card" id="filterValuesBlock" style="display:none;">
+      <h3 id="filterValuesTitle">Valeurs</h3>
+      <div id="filterValues" class="filter-values"></div>
+    </section>
+  </aside>
+
+  <section class="main">
+    <section class="card">
+      <div class="card-header-row">
+        <h2>3. Synthèse des missions</h2>
+        <span id="missionsCount" class="badge"></span>
+      </div>
+      <div id="missionsList" class="table-wrapper"></div>
+    </section>
+
+    <section class="card">
+      <h2>Détail de la mission</h2>
+      <div id="detailPane" class="detail-pane muted">
+        Sélectionne une mission dans le tableau pour voir le détail.
+      </div>
+    </section>
+  </section>
+</main>
+
+<script src="admin.js"></script>
 </body>
 </html>
