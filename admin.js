@@ -477,5 +477,5 @@ function escapeHtml(str) {
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
-  }[c] || c);
+  }[c] || c));
 }
