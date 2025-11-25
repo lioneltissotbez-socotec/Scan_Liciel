@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Explorateur Missions LICIEL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>📁 Explorateur des Missions LICIEL</h1>
+
+<div class="card">
+    <p><b>1 — Choisir le dossier racine contenant les missions LICIEL :</b></p>
+    <button id="pickRoot">Choisir un dossier</button>
+    <p id="rootName"></p>
+</div>
+
+<div class="card" id="missionsCard" style="display:none;">
+    <p><b>2 — Missions détectées :</b></p>
+
+    <div id="missionList"></div>
+</div>
+
+<div class="card" id="detailCard" style="display:none;">
+    <h2>Détails de la mission</h2>
+    <div id="detailContent"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
