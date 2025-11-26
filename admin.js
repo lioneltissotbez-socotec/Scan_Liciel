@@ -362,7 +362,7 @@ function showMissionDetail(id) {
     return;
   }
 
-  let html = `<div class="detail-section"><h3>Identité mission</h3>`;
+  let html = `<div class="detail-section"><h3>Identité mission</h3><div class="info-grid">`;
   const g = mission.general || {};
   const blocks = [
     buildFieldGroup("Donneur d'ordre", [
@@ -413,21 +413,24 @@ function showMissionDetail(id) {
   ];
 
   blocks.forEach(block => { html += block; });
-  html += `</div>`;
+  html += `</div></div>`;
 
   if (mission.conclusions && mission.conclusions.length) {
-    const filled = mission.conclusions.filter(c =>
-      Object.values(c).some(v => v && v.trim())
-    );
+    const filled = mission.conclusions.filter(c => c.LiColonne_conclusion_liciel && c.LiColonne_conclusion_liciel.trim());
     if (filled.length) {
       html += `<div class="detail-section"><h3>Conclusions administratives</h3>`;
       filled.forEach(c => {
+        html += `<div class="conclusion-card">`;
+        html += `<p class="conclusion-title">${escapeHtml(formatLabel("LiColonne_conclusion_liciel"))}</p>`;
+        html += `<p class="conclusion-text">${escapeHtml(c.LiColonne_conclusion_liciel)}</p>`;
+
         Object.entries(c).forEach(([k, v]) => {
+          if (k === "LiColonne_conclusion_liciel") return;
           if (v && v.trim()) {
-            html += `<p><b>${escapeHtml(k)} :</b> ${escapeHtml(v)}</p>`;
+            html += `<p><b>${escapeHtml(formatLabel(k))} :</b> ${escapeHtml(v)}</p>`;
           }
         });
-        html += `<hr />`;
+        html += `</div>`;
       });
       html += `</div>`;
     }
@@ -492,10 +495,10 @@ function buildFieldGroup(title, pairs) {
   if (!filledPairs.length) return "";
 
   const content = filledPairs.map(([label, value]) =>
-    `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(value)}</p>`
+    `<p><span class="pill-label">${escapeHtml(label)}</span><span class="pill-value">${escapeHtml(value)}</span></p>`
   ).join("");
 
-  return `<div class="detail-section"><h3>${escapeHtml(title)}</h3>${content}</div>`;
+  return `<div class="info-card"><div class="info-card__header">${escapeHtml(title)}</div>${content}</div>`;
 }
 
 /********************************************************************
