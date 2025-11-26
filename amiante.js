@@ -56,6 +56,12 @@ async function chargerSyntheseAutomatique() {
     return;
   }
 
+  const jsonLocal = await chargerDepuisJsonLocal();
+  if (jsonLocal) {
+    appliquerPayloadAutomatique(jsonLocal);
+    return;
+  }
+
   await chargerSyntheseDepuisXmlLocal();
 }
 
@@ -183,6 +189,24 @@ async function chargerSyntheseDepuisXmlLocal() {
   } catch (err) {
     console.error("Impossible de générer la synthèse amiante à partir des XML locaux", err);
     if (autoXmlStatus) autoXmlStatus.textContent = "Impossible de générer la synthèse amiante à partir des XML locaux.";
+  }
+}
+
+async function chargerDepuisJsonLocal() {
+  try {
+    const response = await fetch("amiante_auto.json");
+    if (!response.ok) return null;
+
+    const payload = await response.json();
+    if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) return null;
+
+    const meta = payload.meta || {};
+    const label = meta.label || meta.id || meta.generatedFrom || "mission";
+    const createdAt = meta.createdAt || Date.now();
+    return { rows: payload.rows, meta: { ...meta, label, createdAt } };
+  } catch (err) {
+    console.warn("Impossible de charger amiante_auto.json", err);
+    return null;
   }
 }
 
