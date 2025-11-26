@@ -118,6 +118,15 @@ async function parseMissionDirectory(dirHandle, folderName) {
 
   const media = await collectMissionMedia({ photosDir, imagesDir });
 
+  const photoUrls = media.photoUrls || new Map();
+  if (photos && photos.length && photoUrls.size) {
+    photos = photos.map(p => {
+      const key = (p.fichier || "").toLowerCase();
+      const url = photoUrls.get(key);
+      return url ? { ...p, url } : p;
+    });
+  }
+
   if (!general) return null; // pas une mission LICIEL valide
 
   return {
@@ -133,31 +142,45 @@ async function parseMissionDirectory(dirHandle, folderName) {
 }
 
 async function collectMissionMedia({ photosDir, imagesDir }) {
-  const media = { presentationImage: null, dpeEtiquettes: [] };
+  const media = { presentationImage: null, dpeEtiquettes: [], photoUrls: new Map() };
 
-  if (photosDir) {
-    for await (const [fileName, fileHandle] of photosDir.entries()) {
+  const imageExtensions = /\.(jpe?g|png|webp)$/i;
+  const filesToLink = [];
+
+  async function scanDirectory(dirHandle, { allowPresentation = false, allowEtiquette = false } = {}) {
+    for await (const [fileName, fileHandle] of dirHandle.entries()) {
       if (fileHandle.kind !== "file") continue;
-      if (fileName.toLowerCase() === "presentation.jpg") {
+
+      const lower = fileName.toLowerCase();
+
+      if (allowPresentation && !media.presentationImage && lower.startsWith("presentation.")) {
         const url = await createObjectUrl(fileHandle);
-        if (url) {
-          media.presentationImage = { url, name: fileName };
-        }
+        if (url) media.presentationImage = { url, name: fileName };
+      }
+
+      if (allowEtiquette && lower.includes("etiquette")) {
+        const url = await createObjectUrl(fileHandle);
+        if (url) media.dpeEtiquettes.push({ url, name: fileName });
+      }
+
+      if (imageExtensions.test(lower)) {
+        filesToLink.push([lower, fileHandle]);
       }
     }
+  }
+
+  if (photosDir) {
+    await scanDirectory(photosDir, { allowPresentation: true, allowEtiquette: true });
   }
 
   if (imagesDir) {
-    for await (const [fileName, fileHandle] of imagesDir.entries()) {
-      if (fileHandle.kind !== "file") continue;
-      if (fileName.toLowerCase().includes("etiquette")) {
-        const url = await createObjectUrl(fileHandle);
-        if (url) {
-          media.dpeEtiquettes.push({ url, name: fileName });
-        }
-      }
-    }
+    await scanDirectory(imagesDir, { allowPresentation: true, allowEtiquette: true });
   }
+
+  const resolvedUrls = await Promise.all(filesToLink.map(async ([name, handle]) => [name, await createObjectUrl(handle)]));
+  resolvedUrls.forEach(([name, url]) => {
+    if (url) media.photoUrls.set(name, url);
+  });
 
   return media;
 }
@@ -683,8 +706,12 @@ function buildMissionDetailHtml(mission) {
 
     if (hasPhotoMeta) {
       mission.photos.forEach(p => {
+        const imageBlock = p.url
+          ? `<div class="photo-card__image"><img src="${p.url}" alt="${escapeHtml(p.Titre || "Photo")}" loading="lazy" /></div>`
+          : "";
         html += `
           <div class="photo-card photo-card--meta">
+            ${imageBlock}
             <div class="photo-card__title">${escapeHtml(p.Titre || "Photo")}</div>
             ${p.legende ? `<div class="photo-card__legend">${escapeHtml(p.legende)}</div>` : ""}
             ${p.fichier ? `<div class="pill-label">${escapeHtml(p.fichier)}</div>` : ""}
