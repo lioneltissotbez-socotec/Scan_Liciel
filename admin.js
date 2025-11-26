@@ -385,7 +385,16 @@ function construireSyntheseDepuisXml(parsed) {
 function convertirSyntheseEnRows(synthese, generalInfo = {}) {
   const commune = generalInfo.LiColonne_Immeuble_Commune || "";
   const adresse = generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.LiColonne_Immeuble_Batiment || generalInfo.LiColonne_Immeuble_Nom || "";
-  const numUG = generalInfo.LiColonne_Loc_Lot || generalInfo.LiColonne_Immeuble_Lot || generalInfo.LiColonne_Immeuble_Loc_copro || generalInfo.LiColonne_Loc_Numero || "UG";
+  const missionId = generalInfo.LiColonne_Gen_Num_rapport
+    || generalInfo.LiColonne_Gen_Num_mission
+    || generalInfo.LiColonne_Gen_Num_dossier
+    || generalInfo.LiColonne_Dossier_Materiau;
+  const numUG = missionId
+    || generalInfo.LiColonne_Loc_Lot
+    || generalInfo.LiColonne_Immeuble_Lot
+    || generalInfo.LiColonne_Immeuble_Loc_copro
+    || generalInfo.LiColonne_Loc_Numero
+    || "UG";
   const date = generalInfo.LiColonne_Gen_Date_rapport || generalInfo.LiColonne_Gen_Date || generalInfo.LiColonne_Gen_Date_mission || "";
   const operateur = generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.LiColonne_Gen_Operateur || "";
   const rapport = generalInfo.LiColonne_Gen_Num_rapport || generalInfo.LiColonne_Gen_Numero_rapport || "";
@@ -396,10 +405,11 @@ function convertirSyntheseEnRows(synthese, generalInfo = {}) {
     const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
     const nomEI = mat.localisation || adresse || "Adresse non précisée";
     const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
+    const numUgFinal = numUG || "UG";
 
     return {
       Nom_EI: nomEI,
-      Num_UG: mat.zspo || `${numUG}-${idx + 1}`,
+      Num_UG: numUgFinal,
       Commune: commune,
       date_realisation: date,
       operateur,
