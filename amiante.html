@@ -39,6 +39,24 @@
     </section>
 
     <section id="resultContainer"></section>
+
+    <section class="card amiante-xml">
+      <div class="amiante-hero__text">
+        <p class="pill-label">Nouveau</p>
+        <h2>Construire la synthèse directement depuis les XML LICIEL</h2>
+        <p class="muted">Importez les fichiers <code>Table_Z_Amiante*.xml</code> (général, prélèvements, écarts, documents, matériaux). Nous conservons l'import Excel, mais cette section reconstitue la synthèse sans tableur.</p>
+        <div class="upload-actions">
+          <label for="xmlInput" class="upload-label">Sélectionnez les XML</label>
+          <input type="file" id="xmlInput" accept=".xml" multiple />
+          <button id="parseXmlBtn" class="primary-btn">Générer depuis XML</button>
+        </div>
+        <div class="upload-hint">Tous les XML peuvent être sélectionnés en une seule fois ou ajoutés au fur et à mesure.</div>
+      </div>
+      <div class="amiante-xml__output">
+        <h3>Structure JSON générée</h3>
+        <pre id="xmlOutput" class="code-block"></pre>
+      </div>
+    </section>
   </main>
 
   <script src="amiante.js"></script>
