@@ -98,24 +98,27 @@ async function parseMissionDirectory(dirHandle, folderName) {
       }
     }
   }
-  const target = xmlDir || dirHandle;
+  const directoriesToScan = [dirHandle];
+  if (xmlDir && xmlDir !== dirHandle) directoriesToScan.push(xmlDir);
 
-  for await (const [fileName, fileHandle] of target.entries()) {
-    if (fileHandle.kind !== "file") continue;
-    const lower = fileName.toLowerCase();
+  for (const target of directoriesToScan) {
+    for await (const [fileName, fileHandle] of target.entries()) {
+      if (fileHandle.kind !== "file") continue;
+      const lower = fileName.toLowerCase();
 
-    if (lower === "table_general_bien.xml") {
-      general = parseSingleRowTable(await readFileCorrectly(fileHandle));
-    } else if (lower === "table_general_bien_conclusions.xml") {
-      conclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
-    } else if (lower === "table_general_photo.xml") {
-      photos = parsePhotoTable(await readFileCorrectly(fileHandle));
-    } else if (lower === "table_z_conclusions_details.xml") {
-      domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
-    } else if (DOMAIN_FILES[lower]) {
-      domainFlags.add(DOMAIN_FILES[lower]);
-      if (lower.startsWith("table_z_amiante")) {
-        amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
+      if (lower === "table_general_bien.xml") {
+        general = parseSingleRowTable(await readFileCorrectly(fileHandle));
+      } else if (lower === "table_general_bien_conclusions.xml") {
+        conclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
+      } else if (lower === "table_general_photo.xml") {
+        photos = parsePhotoTable(await readFileCorrectly(fileHandle));
+      } else if (lower === "table_z_conclusions_details.xml") {
+        domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
+      } else if (DOMAIN_FILES[lower]) {
+        domainFlags.add(DOMAIN_FILES[lower]);
+        if (lower.startsWith("table_z_amiante")) {
+          amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
+        }
       }
     }
   }
