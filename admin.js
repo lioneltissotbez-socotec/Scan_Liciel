@@ -11,7 +11,9 @@ const DOMAIN_FILES = {
   "table_z_dpe_2020_general.xml": "DPE",
   "table_z_crep_general.xml": "Plomb",
   "table_z_carrez_general.xml": "Mesurage Carrez",
-  "table_z_amiante_general.xml": "Amiante"
+  "table_z_amiante_general.xml": "Amiante",
+  "table_z_parasites_general.xml": "Parasites",
+  "table_z_termites_general.xml": "Termites"
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -71,7 +73,6 @@ async function scanRootFolder(rootHandle) {
 async function parseMissionDirectory(dirHandle, folderName) {
   let general = null;
   let conclusions = null;
-  let descGeneral = null;
   let photos = [];
   let domainConclusions = [];
   const domainFlags = new Set();
@@ -94,8 +95,6 @@ async function parseMissionDirectory(dirHandle, folderName) {
       general = parseSingleRowTable(await readFileCorrectly(fileHandle));
     } else if (lower === "table_general_bien_conclusions.xml") {
       conclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
-    } else if (lower === "table_general_desciption_general.xml") {
-      descGeneral = parseSingleRowTable(await readFileCorrectly(fileHandle));
     } else if (lower === "table_general_photo.xml") {
       photos = parsePhotoTable(await readFileCorrectly(fileHandle));
     } else if (lower === "table_z_conclusions_details.xml") {
@@ -112,7 +111,6 @@ async function parseMissionDirectory(dirHandle, folderName) {
     label: folderName,
     general,
     conclusions,
-    descGeneral,
     photos,
     domainConclusions,
     domains: Array.from(domainFlags)
@@ -289,10 +287,10 @@ function filteredMissions() {
 
 function detectDomains(mission) {
   if (mission.domains && mission.domains.length) {
-    return mission.domains;
+    return Array.from(new Set(mission.domains));
   }
 
-  const result = [];
+  const result = new Set();
   if (mission.domainConclusions && mission.domainConclusions.length) {
     const hasAmiante = mission.domainConclusions.some(d =>
       (d.Conclusion_Amiante || d.Etat_Amiante || "").trim()
@@ -303,11 +301,22 @@ function detectDomains(mission) {
     const hasDPE = mission.domainConclusions.some(d =>
       (d.DPE_Conclusion || d.DPE_Etiquette || "").trim()
     );
-    if (hasAmiante) result.push("Amiante");
-    if (hasPlomb) result.push("Plomb");
-    if (hasDPE) result.push("DPE");
+    if (hasAmiante) result.add("Amiante");
+    if (hasPlomb) result.add("Plomb");
+    if (hasDPE) result.add("DPE");
   }
-  return result;
+
+  if (mission.conclusions && mission.conclusions.length) {
+    mission.conclusions.forEach(c => {
+      const domain = (c.LiColonne_nom || "").trim();
+      const text = (c.LiColonne_conclusion_liciel || "").trim();
+      if (domain && text) {
+        result.add(domain);
+      }
+    });
+  }
+
+  return Array.from(result);
 }
 
 function renderMissionsTable() {
@@ -435,19 +444,10 @@ function showMissionDetail(id) {
   if (mission.conclusions && mission.conclusions.length) {
     const filled = mission.conclusions.filter(c => c.LiColonne_conclusion_liciel && c.LiColonne_conclusion_liciel.trim());
     if (filled.length) {
-      html += `<div class="detail-section"><h3>Conclusions administratives</h3>`;
+      html += `<div class="detail-section"><h3>Bloc Conclusions</h3>`;
       filled.forEach(c => {
-        html += `<div class="conclusion-card">`;
-        html += `<p class="conclusion-title">${escapeHtml(formatLabel("LiColonne_conclusion_liciel"))}</p>`;
-        html += `<p class="conclusion-text">${escapeHtml(c.LiColonne_conclusion_liciel)}</p>`;
-
-        Object.entries(c).forEach(([k, v]) => {
-          if (k === "LiColonne_conclusion_liciel") return;
-          if (v && v.trim()) {
-            html += `<p><b>${escapeHtml(formatLabel(k))} :</b> ${escapeHtml(v)}</p>`;
-          }
-        });
-        html += `</div>`;
+        const domain = c.LiColonne_nom || "Conclusion";
+        html += `<p><strong>${escapeHtml(domain)} :</strong> ${escapeHtml(c.LiColonne_conclusion_liciel)}</p>`;
       });
       html += `</div>`;
     }
@@ -467,17 +467,6 @@ function showMissionDetail(id) {
           }
         });
         html += `</div><hr />`;
-      });
-      html += `</div>`;
-    }
-  }
-
-  if (mission.descGeneral && Object.keys(mission.descGeneral).length) {
-    const filledPairs = Object.entries(mission.descGeneral).filter(([, v]) => v && v.trim());
-    if (filledPairs.length) {
-      html += `<div class="detail-section"><h3>Compléments administratifs</h3>`;
-      filledPairs.forEach(([k, v]) => {
-        html += `<p><b>${escapeHtml(formatLabel(k))} :</b> ${escapeHtml(v)}</p>`;
       });
       html += `</div>`;
     }
