@@ -84,44 +84,46 @@ async function parseMissionDirectory(dirHandle, folderName) {
   let photosDir = null;
   let imagesDir = null;
 
-  // Cherche un sous-dossier "XML"
-  let xmlDir = null;
+  // Cherche des sous-dossiers utiles (photos / images / XML) mais le scan des fichiers se fait récursivement ensuite.
   for await (const [n, h] of dirHandle.entries()) {
     if (h.kind === "directory") {
       const lower = n.toLowerCase();
-      if (lower === "xml") {
-        xmlDir = h;
-      } else if (lower === "photos") {
+      if (lower === "photos") {
         photosDir = h;
       } else if (lower === "images") {
         imagesDir = h;
       }
     }
   }
-  const directoriesToScan = [dirHandle];
-  if (xmlDir && xmlDir !== dirHandle) directoriesToScan.push(xmlDir);
 
-  for (const target of directoriesToScan) {
-    for await (const [fileName, fileHandle] of target.entries()) {
-      if (fileHandle.kind !== "file") continue;
-      const lower = fileName.toLowerCase();
+  await scanMissionFiles(dirHandle, async (fileName, fileHandle) => {
+    const lower = fileName.toLowerCase();
 
-      if (lower === "table_general_bien.xml") {
-        general = parseSingleRowTable(await readFileCorrectly(fileHandle));
-      } else if (lower === "table_general_bien_conclusions.xml") {
-        conclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
-      } else if (lower === "table_general_photo.xml") {
-        photos = parsePhotoTable(await readFileCorrectly(fileHandle));
-      } else if (lower === "table_z_conclusions_details.xml") {
-        domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
-      } else if (DOMAIN_FILES[lower]) {
-        domainFlags.add(DOMAIN_FILES[lower]);
-        if (lower.startsWith("table_z_amiante")) {
-          amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
-        }
-      }
+    if (lower === "table_general_bien.xml" && !general) {
+      general = parseSingleRowTable(await readFileCorrectly(fileHandle));
+      return;
     }
-  }
+    if (lower === "table_general_bien_conclusions.xml" && !conclusions) {
+      conclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
+      return;
+    }
+    if (lower === "table_general_photo.xml" && !photos.length) {
+      photos = parsePhotoTable(await readFileCorrectly(fileHandle));
+      return;
+    }
+    if (lower === "table_z_conclusions_details.xml" && !domainConclusions.length) {
+      domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
+      return;
+    }
+
+    if (DOMAIN_FILES[lower]) {
+      domainFlags.add(DOMAIN_FILES[lower]);
+    }
+
+    if (lower.startsWith("table_z_amiante")) {
+      amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
+    }
+  });
 
   const media = await collectMissionMedia({ photosDir, imagesDir });
 
@@ -149,6 +151,16 @@ async function parseMissionDirectory(dirHandle, folderName) {
     media,
     amianteRows
   };
+}
+
+async function scanMissionFiles(dirHandle, callback) {
+  for await (const [name, handle] of dirHandle.entries()) {
+    if (handle.kind === "file") {
+      await callback(name, handle);
+    } else if (handle.kind === "directory") {
+      await scanMissionFiles(handle, callback);
+    }
+  }
 }
 
 async function collectMissionMedia({ photosDir, imagesDir }) {
@@ -263,6 +275,9 @@ function buildAmianteRowsFromXml(files, generalInfo = {}) {
 function parseGenericXmlRows(xmlText) {
   const xml = new DOMParser().parseFromString(xmlText, "text/xml");
   if (xml.querySelector("parsererror")) return [];
+  const liItems = [...xml.getElementsByTagName("*")].filter(el => /^LiItem_/i.test(el.tagName));
+  if (liItems.length) return liItems.map(el => transformerElementEnObjet(el));
+
   const root = xml.documentElement;
   const children = [...root.children].filter(el => el.nodeType === 1);
   if (!children.length) return [transformerElementEnObjet(root)];
