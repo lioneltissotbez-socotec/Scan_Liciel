@@ -63,5 +63,9 @@ for mat in materiaux:
     rows.append(row)
 
 payload = {"rows": rows, "meta": {"generatedFrom": "xml", "sources": ["Table_Z_Amiante.xml", "Table_Z_Amiante_prelevements.xml", "Table_Z_Amiante_General.xml"]}}
-Path('amiante_auto.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2))
-print(f"Generated {len(rows)} rows in amiante_auto.json")
+
+json_text = json.dumps(payload, ensure_ascii=False, indent=2)
+
+for target in ("amiante_auto.json", "generate_amiante_json.json"):
+    Path(target).write_text(json_text)
+    print(f"Generated {len(rows)} rows in {target}")
