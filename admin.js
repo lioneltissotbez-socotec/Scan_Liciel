@@ -5,6 +5,7 @@ let allMissions = [];
 let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
 let selectedDomains = new Set();
+let openedDetailId = null;
 
 const DOMAIN_FILES = {
   "table_z_elec_general.xml": "Électricité",
@@ -415,7 +416,7 @@ function renderMissionsTable() {
     const domaines = detectDomains(m).join(", ");
 
     html += `
-      <tr>
+      <tr class="mission-row" data-id="${escapeHtml(m.id)}">
         <td><button class="detail-btn" data-id="${escapeHtml(m.id)}">Voir</button></td>
         <td>${escapeHtml(g.LiColonne_Mission_Num_Dossier || "")}</td>
         <td>${escapeHtml(g.LiColonne_Immeuble_Adresse1 || "")}</td>
@@ -434,7 +435,12 @@ function renderMissionsTable() {
 
   container.querySelectorAll(".detail-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      showMissionDetail(btn.dataset.id);
+      const row = btn.closest("tr");
+      if (openedDetailId === btn.dataset.id) {
+        closeInlineDetail();
+        return;
+      }
+      showMissionDetail(btn.dataset.id, row);
     });
   });
 }
@@ -442,15 +448,48 @@ function renderMissionsTable() {
 /********************************************************************
  *  DÉTAIL MISSION ADMINISTRATIF
  ********************************************************************/
-function showMissionDetail(id) {
+function closeInlineDetail() {
+  const existing = document.querySelector(".detail-row");
+  if (existing) existing.remove();
+  openedDetailId = null;
+}
+
+function showMissionDetail(id, anchorRow) {
   const mission = allMissions.find(m => m.id === id);
-  const pane = document.getElementById("detailPane");
+  closeInlineDetail();
+
+  if (!mission || !anchorRow) return;
+
+  openedDetailId = id;
+
+  const detailRow = document.createElement("tr");
+  detailRow.className = "detail-row";
+
+  const cell = document.createElement("td");
+  cell.colSpan = anchorRow.children.length;
+  cell.innerHTML = `<div class="inline-detail">${buildMissionDetailHtml(mission)}</div>`;
+
+  detailRow.appendChild(cell);
+  anchorRow.insertAdjacentElement("afterend", detailRow);
+
+  const closeBtn = detailRow.querySelector(".inline-detail__close");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeInlineDetail);
+  }
+}
+
+function buildMissionDetailHtml(mission) {
   if (!mission) {
-    pane.innerHTML = "<p class='muted'>Mission introuvable.</p>";
-    return;
+    return "<p class='muted'>Mission introuvable.</p>";
   }
 
-  let html = `<div class="detail-section"><h3>Identité mission</h3><div class="info-grid">`;
+  let html = `
+    <div class="inline-detail__header">
+      <div class="inline-detail__title">Détail de la mission – ${escapeHtml(mission.label || mission.id)}</div>
+      <button class="inline-detail__close" type="button">Fermer</button>
+    </div>
+    <div class="detail-section"><h3>Identité mission</h3><div class="info-grid">
+  `;
   const g = mission.general || {};
   const blocks = [
     buildFieldGroup("Donneur d'ordre", [
@@ -519,9 +558,9 @@ function showMissionDetail(id) {
       html += `<div class="detail-section"><h3>Bloc Conclusions</h3><div class="conclusion-board"><div class="conclusion-grid">`;
       grouped.forEach((texts, domain) => {
         html += `<div class="conclusion-card">`;
-        html += `<p class="conclusion-title">${escapeHtml(domain)}</p>`;
-        texts.forEach(text => {
-          html += `<p class="conclusion-text">${escapeHtml(text)}</p>`;
+        html += `<div class="conclusion-title">${escapeHtml(domain)}</div>`;
+        texts.forEach(t => {
+          html += `<p>${escapeHtml(t)}</p>`;
         });
         html += `</div>`;
       });
@@ -531,45 +570,48 @@ function showMissionDetail(id) {
 
   if (mission.domainConclusions && mission.domainConclusions.length) {
     const filtered = mission.domainConclusions.filter(c =>
-      Object.values(c).some(v => v && v.trim())
+      c.Etat_Amiante || c.Conclusion_Amiante || c.CREP_Classement || c.DPE_Conclusion || c.DPE_Etiquette
     );
     if (filtered.length) {
-      html += `<div class="detail-section"><h3>Conclusions par domaine</h3>`;
+      html += `<div class="detail-section"><h3>Conclusions par domaine</h3><div class="conclusion-board"><div class="conclusion-grid">`;
       filtered.forEach(c => {
-        html += `<div style="margin-bottom:4px;">`;
-        Object.entries(c).forEach(([k, v]) => {
-          if (v && v.trim()) {
-            html += `<p><b>${escapeHtml(k)} :</b> ${escapeHtml(v)}</p>`;
-          }
-        });
-        html += `</div><hr />`;
+        html += `<div class="conclusion-card">`;
+        if (c.Conclusion_Amiante || c.Etat_Amiante) {
+          html += `<div class="pill-label">Amiante</div>`;
+          if (c.Conclusion_Amiante) html += `<p>${escapeHtml(c.Conclusion_Amiante)}</p>`;
+          if (c.Etat_Amiante) html += `<p>${escapeHtml(c.Etat_Amiante)}</p>`;
+        }
+        if (c.CREP_Classement) {
+          html += `<div class="pill-label">Plomb</div>`;
+          html += `<p>${escapeHtml(c.CREP_Classement)}</p>`;
+        }
+        if (c.DPE_Conclusion || c.DPE_Etiquette) {
+          html += `<div class="pill-label">DPE</div>`;
+          if (c.DPE_Conclusion) html += `<p>${escapeHtml(c.DPE_Conclusion)}</p>`;
+          if (c.DPE_Etiquette) html += `<p>${escapeHtml(c.DPE_Etiquette)}</p>`;
+        }
+        html += `</div>`;
       });
-      html += `</div>`;
+      html += `</div></div></div>`;
     }
   }
 
   if (mission.photos && mission.photos.length) {
-    html += `<div class="detail-section"><h3>Photographies</h3>`;
+    html += `<div class="detail-section"><h3>Photos</h3><div class="photo-grid">`;
     mission.photos.forEach(p => {
-      const path = p.LiColonne_Photo_Clef || p.Photo_Clef || "";
-      const commentaire = p.LiColonne_Photo_Commentaire || p.Photo_Commentaire || "";
-      if (!path) return;
-      const fileName = path.split("/").pop();
       html += `
-        <div class="photo-chip">
-          <div class="photo-chip__icon">📄</div>
-          <div class="photo-chip__meta">
-            <div class="photo-chip__name">${escapeHtml(fileName)}</div>
-            ${commentaire ? `<div class="photo-chip__comment">${escapeHtml(commentaire)}</div>` : ""}
-          </div>
+        <div class="photo-card">
+          <div class="photo-card__title">${escapeHtml(p.Titre || "Photo")}</div>
+          ${p.legende ? `<div class="photo-card__legend">${escapeHtml(p.legende)}</div>` : ""}
+          ${p.fichier ? `<div class="pill-label">${escapeHtml(p.fichier)}</div>` : ""}
+          ${p.date ? `<div class='muted'>${escapeHtml(p.date)}</div>` : ""}
         </div>
       `;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   }
 
-  pane.classList.remove("muted");
-  pane.innerHTML = html;
+  return html;
 }
 
 function buildFieldGroup(title, pairs) {
