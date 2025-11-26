@@ -435,16 +435,31 @@ function showMissionDetail(id) {
     }
   }
 
+  if (mission.descGeneral && Object.keys(mission.descGeneral).length) {
+    const filledPairs = Object.entries(mission.descGeneral).filter(([, v]) => v && v.trim());
+    if (filledPairs.length) {
+      html += `<div class="detail-section"><h3>Compléments administratifs</h3>`;
+      filledPairs.forEach(([k, v]) => {
+        html += `<p><b>${escapeHtml(formatLabel(k))} :</b> ${escapeHtml(v)}</p>`;
+      });
+      html += `</div>`;
+    }
+  }
+
   if (mission.photos && mission.photos.length) {
     html += `<div class="detail-section"><h3>Photographies</h3>`;
     mission.photos.forEach(p => {
       const path = p.LiColonne_Photo_Clef || p.Photo_Clef || "";
       const commentaire = p.LiColonne_Photo_Commentaire || p.Photo_Commentaire || "";
       if (!path) return;
+      const fileName = path.split("/").pop();
       html += `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <img src="${escapeHtml(path)}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />
-          <span>${escapeHtml(commentaire)}</span>
+        <div class="photo-chip">
+          <div class="photo-chip__icon">📄</div>
+          <div class="photo-chip__meta">
+            <div class="photo-chip__name">${escapeHtml(fileName)}</div>
+            ${commentaire ? `<div class="photo-chip__comment">${escapeHtml(commentaire)}</div>` : ""}
+          </div>
         </div>
       `;
     });
@@ -466,4 +481,13 @@ function escapeHtml(str) {
     '"': "&quot;",
     "'": "&#39;"
   }[c] || c));
+}
+
+/**
+ * Convertit un nom de colonne XML en libellé plus lisible pour l'affichage.
+ */
+function formatLabel(rawKey) {
+  if (!rawKey) return "";
+  const cleaned = rawKey.replace(/^LiColonne_/i, "").replace(/_/g, " ");
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
