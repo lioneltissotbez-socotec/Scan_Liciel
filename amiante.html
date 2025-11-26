@@ -46,9 +46,28 @@
         <h2>Synthèse construite depuis les XML LICIEL</h2>
         <p class="muted">En ouvrant cette page depuis le module administratif, les fichiers XML amiante sont lus automatiquement et la synthèse est affichée avec la même présentation que l'import Excel.</p>
         <div id="autoXmlStatus" class="upload-hint">En attente des données XML transmises par le module administratif.</div>
+        <div class="json-debug">
+          <p class="muted">Lecture rapide des fichiers JSON générés pour le débogage :</p>
+          <div class="json-debug__actions">
+            <button class="secondary-btn" data-json-path="amiante_auto.json" data-json-label="AMIANTE-AUTO-JSON">Voir AMIANTE-AUTO-JSON</button>
+            <button class="secondary-btn" data-json-path="generate_amiante_json.json" data-json-label="GENERATE-AMIANTE-JSON">Voir GENERATE-AMIANTE-JSON</button>
+          </div>
+          <p class="upload-hint">Les contenus sont ouverts dans une fenêtre modale pour faciliter la lecture ou le copier-coller.</p>
+        </div>
       </div>
     </section>
   </main>
+
+  <div id="jsonModal" class="json-modal" role="dialog" aria-modal="true" aria-labelledby="jsonModalTitle" style="display:none;">
+    <div class="json-modal__backdrop"></div>
+    <div class="json-modal__content">
+      <div class="json-modal__header">
+        <h3 id="jsonModalTitle">Fichier JSON</h3>
+        <button id="closeJsonModal" class="icon-btn" aria-label="Fermer la fenêtre">✕</button>
+      </div>
+      <pre id="jsonModalBody" class="json-modal__body"></pre>
+    </div>
+  </div>
 
   <script src="amiante.js"></script>
 </body>
