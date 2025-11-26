@@ -5,6 +5,15 @@ let allMissions = [];
 let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
 
+const DOMAIN_FILES = {
+  "table_z_elec_general.xml": "Électricité",
+  "table_z_gaz_general.xml": "Gaz",
+  "table_z_dpe_2020_general.xml": "DPE",
+  "table_z_crep_general.xml": "Plomb",
+  "table_z_carrez_general.xml": "Mesurage Carrez",
+  "table_z_amiante_general.xml": "Amiante"
+};
+
 window.addEventListener("DOMContentLoaded", () => {
   const rootBtn = document.getElementById("pickRoot");
   if (!rootBtn) {
@@ -65,6 +74,7 @@ async function parseMissionDirectory(dirHandle, folderName) {
   let descGeneral = null;
   let photos = [];
   let domainConclusions = [];
+  const domainFlags = new Set();
 
   // Cherche un sous-dossier "XML"
   let xmlDir = null;
@@ -90,6 +100,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
       photos = parsePhotoTable(await readFileCorrectly(fileHandle));
     } else if (lower === "table_z_conclusions_details.xml") {
       domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
+    } else if (DOMAIN_FILES[lower]) {
+      domainFlags.add(DOMAIN_FILES[lower]);
     }
   }
 
@@ -102,7 +114,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
     conclusions,
     descGeneral,
     photos,
-    domainConclusions
+    domainConclusions,
+    domains: Array.from(domainFlags)
   };
 }
 
@@ -275,6 +288,10 @@ function filteredMissions() {
 }
 
 function detectDomains(mission) {
+  if (mission.domains && mission.domains.length) {
+    return mission.domains;
+  }
+
   const result = [];
   if (mission.domainConclusions && mission.domainConclusions.length) {
     const hasAmiante = mission.domainConclusions.some(d =>
