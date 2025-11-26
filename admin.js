@@ -10,24 +10,26 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     rootBtn.addEventListener("click", async () => {
-        try {
-            // Ouvre le sélecteur de dossier
-            const rootHandle = await window.showDirectoryPicker();
+    try {
+        const rootHandle = await window.showDirectoryPicker();
 
-            document.getElementById("rootInfo").textContent =
-                "📁 Dossier racine : " + rootHandle.name;
+        document.getElementById("rootInfo").textContent =
+            "📁 Dossier racine : " + rootHandle.name;
 
-            // Scan
-            const missions = await scanRootFolder(rootHandle);
-            window.allMissions = missions;
+        const missions = await scanRootFolder(rootHandle);
+        window.allMissions = missions;
 
-            renderFilters(missions);
-            renderMissionsTable(missions);
+        // --- NOUVEAU ---
+        renderFilterButtons();
+        renderFilterValues();
+        renderMissionsTable();
+        // ---------------
 
-        } catch (err) {
-            console.warn("Sélection annulée :", err);
-        }
-    });
+    } catch (err) {
+        console.warn("Sélection annulée :", err);
+    }
+});
+
 });
 
 /********************************************************************
