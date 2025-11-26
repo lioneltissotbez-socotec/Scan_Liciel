@@ -49,10 +49,14 @@ if (generateBtn) {
   });
 }
 
-function chargerSyntheseAutomatique() {
+async function chargerSyntheseAutomatique() {
   const payload = lirePayloadAutomatique();
-  if (!payload) return;
-  appliquerPayloadAutomatique(payload);
+  if (payload) {
+    appliquerPayloadAutomatique(payload);
+    return;
+  }
+
+  await chargerSyntheseDepuisXmlLocal();
 }
 
 function appliquerPayloadAutomatique(payload) {
@@ -123,6 +127,63 @@ function lirePayloadAutomatique() {
     localStorage.removeItem(key);
     if (autoXmlStatus) autoXmlStatus.textContent = "Lecture automatique impossible. Relancez depuis le module administratif.";
     return null;
+  }
+}
+
+async function chargerSyntheseDepuisXmlLocal() {
+  const fichiers = [
+    { name: "Table_Z_Amiante.xml", key: "materiaux" },
+    { name: "Table_Z_Amiante_prelevements.xml", key: "prelevements" },
+    { name: "Table_General_Amiante_Analyses.xml", key: "prelevements" },
+    { name: "Table_Z_Amiante_doc_remis.xml", key: "documents" },
+    { name: "Table_Z_Amiante_Ecart_Norme.xml", key: "ecarts" },
+    { name: "Table_Z_Amiante_General.xml", key: "general" }
+  ];
+
+  const parsed = { materiaux: [], prelevements: [], documents: [], ecarts: [], general: [] };
+  const parser = new DOMParser();
+  let fichiersTrouves = 0;
+
+  for (const fichier of fichiers) {
+    try {
+      const response = await fetch(fichier.name);
+      if (!response.ok) continue;
+      const text = await response.text();
+      const doc = parser.parseFromString(text, "application/xml");
+      if (doc.querySelector("parsererror")) continue;
+
+      const rows = extraireLignesXml(doc);
+      parsed[fichier.key] = (parsed[fichier.key] || []).concat(rows);
+      fichiersTrouves++;
+    } catch (err) {
+      console.warn(`Impossible de lire ${fichier.name}`, err);
+    }
+  }
+
+  if (!fichiersTrouves || !parsed.materiaux.length) {
+    if (autoXmlStatus) {
+      autoXmlStatus.textContent = "Aucun XML amiante détecté à la racine du projet.";
+    }
+    return;
+  }
+
+  try {
+    const synthese = construireSyntheseDepuisXml(parsed);
+    const rows = convertirSyntheseEnRows(synthese, parsed.general[0] || {});
+
+    if (!rows.length) {
+      if (autoXmlStatus) autoXmlStatus.textContent = "XML amiante détectés mais aucune donnée exploitable.";
+      return;
+    }
+
+    processDataAndSetupNavigation(rows);
+    if (autoXmlStatus) autoXmlStatus.textContent = "Synthèse amiante générée depuis les XML présents localement.";
+
+    const payload = { rows, meta: { id: parsed.general[0]?.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" } };
+    sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
+  } catch (err) {
+    console.error("Impossible de générer la synthèse amiante à partir des XML locaux", err);
+    if (autoXmlStatus) autoXmlStatus.textContent = "Impossible de générer la synthèse amiante à partir des XML locaux.";
   }
 }
 
@@ -538,6 +599,50 @@ function construireSyntheseDepuisXml(parsed) {
   };
 
   return synthese;
+}
+
+function convertirSyntheseEnRows(synthese, generalInfo = {}) {
+  const commune = generalInfo.LiColonne_Immeuble_Commune || "";
+  const adresse = generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.LiColonne_Immeuble_Batiment || generalInfo.LiColonne_Immeuble_Nom || "";
+  const missionId = generalInfo.LiColonne_Gen_Num_rapport
+    || generalInfo.LiColonne_Gen_Num_mission
+    || generalInfo.LiColonne_Gen_Num_dossier
+    || generalInfo.LiColonne_Dossier_Materiau;
+  const numUG = missionId
+    || generalInfo.LiColonne_Loc_Lot
+    || generalInfo.LiColonne_Immeuble_Lot
+    || generalInfo.LiColonne_Immeuble_Loc_copro
+    || generalInfo.LiColonne_Loc_Numero
+    || "UG";
+  const date = generalInfo.LiColonne_Gen_Date_rapport || generalInfo.LiColonne_Gen_Date || generalInfo.LiColonne_Gen_Date_mission || "";
+  const operateur = generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.LiColonne_Gen_Operateur || "";
+  const rapport = generalInfo.LiColonne_Gen_Num_rapport || generalInfo.LiColonne_Gen_Numero_rapport || "";
+  const etage = generalInfo.LiColonne_Loc_Etage || generalInfo.LiColonne_Immeuble_Etage || "";
+
+  return (synthese.materiaux || []).map(mat => {
+    const prelevementIds = (mat.prelevements || []).map(p => p.id).filter(Boolean).join(", ");
+    const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
+    const nomEI = mat.localisation || adresse || "Adresse non précisée";
+    const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
+    const numUgFinal = numUG || "UG";
+
+    return {
+      Nom_EI: nomEI,
+      Num_UG: numUgFinal,
+      Commune: commune,
+      date_realisation: date,
+      operateur,
+      reference_rapport: rapport,
+      Etage: etage,
+      applicabilite_ZPSO: mat.zspo || "",
+      Local_visite: mat.localisation || "",
+      num_prelevement: prelevementIds,
+      resultat,
+      materiau_produit: produit || "Non précisé",
+      zone: mat.ouvrage || "",
+      commentaires: mat.commentaires || ""
+    };
+  });
 }
 
 function normaliserBooleen(valeur) {
