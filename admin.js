@@ -4,6 +4,7 @@
 let allMissions = [];
 let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
+let selectedDomains = new Set();
 
 const DOMAIN_FILES = {
   "table_z_elec_general.xml": "Électricité",
@@ -34,8 +35,10 @@ window.addEventListener("DOMContentLoaded", () => {
       // Scan
       const missions = await scanRootFolder(rootHandle);
       allMissions = missions;    // ✅ IMPORTANT : on met à jour la variable globale, PAS window.allMissions
+      selectedDomains.clear();
 
       renderFilterButtons();
+      renderDomainFilters();
       renderFilterValues();
       renderMissionsTable();
 
@@ -181,6 +184,58 @@ const FILTER_TYPES = [
 ];
 
 /********************************************************************
+ *  RENDER FILTRES DE DOMAINES
+ ********************************************************************/
+function getDistinctDomains() {
+  const set = new Set();
+  allMissions.forEach(m => {
+    detectDomains(m).forEach(d => {
+      if (d) set.add(d);
+    });
+  });
+  return [...set].sort((a, b) => a.localeCompare(b, "fr"));
+}
+
+function renderDomainFilters() {
+  const container = document.getElementById("domainFilters");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const domains = getDistinctDomains();
+  if (!domains.length) {
+    container.innerHTML = "<p class='muted'>Aucun domaine détecté.</p>";
+    return;
+  }
+
+  domains.forEach(domain => {
+    const label = document.createElement("label");
+    label.className = "domain-filter";
+
+    const title = document.createElement("span");
+    title.className = "domain-filter__label";
+    title.textContent = domain;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = domain;
+    checkbox.checked = selectedDomains.has(domain);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedDomains.add(domain);
+      } else {
+        selectedDomains.delete(domain);
+      }
+      renderMissionsTable();
+    });
+
+    label.appendChild(title);
+    label.appendChild(checkbox);
+    container.appendChild(label);
+  });
+}
+
+/********************************************************************
  *  RENDER FILTRES (NIVEAU 1)
  ********************************************************************/
 function renderFilterButtons() {
@@ -281,6 +336,13 @@ function filteredMissions() {
   let data = allMissions.slice();
   if (currentFilterType && currentFilterValue !== null) {
     data = data.filter(m => getField(m, currentFilterType) === currentFilterValue);
+  }
+  if (selectedDomains.size) {
+    const required = [...selectedDomains];
+    data = data.filter(m => {
+      const domains = detectDomains(m);
+      return required.every(d => domains.includes(d));
+    });
   }
   return data;
 }
@@ -444,12 +506,26 @@ function showMissionDetail(id) {
   if (mission.conclusions && mission.conclusions.length) {
     const filled = mission.conclusions.filter(c => c.LiColonne_conclusion_liciel && c.LiColonne_conclusion_liciel.trim());
     if (filled.length) {
-      html += `<div class="detail-section"><h3>Bloc Conclusions</h3>`;
+      const grouped = new Map();
       filled.forEach(c => {
         const domain = c.LiColonne_nom || "Conclusion";
-        html += `<p><strong>${escapeHtml(domain)} :</strong> ${escapeHtml(c.LiColonne_conclusion_liciel)}</p>`;
+        const text = c.LiColonne_conclusion_liciel;
+        if (!grouped.has(domain)) {
+          grouped.set(domain, []);
+        }
+        grouped.get(domain).push(text);
       });
-      html += `</div>`;
+
+      html += `<div class="detail-section"><h3>Bloc Conclusions</h3><div class="conclusion-board"><div class="conclusion-grid">`;
+      grouped.forEach((texts, domain) => {
+        html += `<div class="conclusion-card">`;
+        html += `<p class="conclusion-title">${escapeHtml(domain)}</p>`;
+        texts.forEach(text => {
+          html += `<p class="conclusion-text">${escapeHtml(text)}</p>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div></div></div>`;
     }
   }
 
