@@ -8,9 +8,7 @@ let groupedData = {};
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const generateBtn = document.getElementById("generateBtn");
-const xmlInput = document.getElementById("xmlInput");
-const parseXmlBtn = document.getElementById("parseXmlBtn");
-const xmlOutput = document.getElementById("xmlOutput");
+const autoXmlStatus = document.getElementById("autoXmlStatus");
 
 if (dropZone) {
   dropZone.addEventListener("dragover", e => {
@@ -51,24 +49,37 @@ if (generateBtn) {
   });
 }
 
-if (parseXmlBtn && xmlInput) {
-  parseXmlBtn.addEventListener("click", async () => {
-    if (!xmlInput.files.length) {
-      alert("Merci de sélectionner les XML LICIEL exportés.");
+function chargerSyntheseAutomatique() {
+  const raw = sessionStorage.getItem("amianteAutoRows");
+  if (!raw) {
+    if (autoXmlStatus) {
+      autoXmlStatus.textContent = "En attente des données XML transmises par le module administratif.";
+    }
+    return;
+  }
+
+  sessionStorage.removeItem("amianteAutoRows");
+
+  try {
+    const payload = JSON.parse(raw);
+    const rows = payload?.rows || [];
+    if (!rows.length) {
+      if (autoXmlStatus) autoXmlStatus.textContent = "Aucune donnée amiante reçue.";
       return;
     }
-    try {
-      const parsedFiles = await lireFichiersXml(Array.from(xmlInput.files));
-      const synthesis = construireSyntheseDepuisXml(parsedFiles);
-      if (xmlOutput) {
-        xmlOutput.textContent = JSON.stringify(synthesis, null, 2);
-      }
-    } catch (err) {
-      console.error("Erreur lors de la lecture des XML", err);
-      alert("Impossible de lire les fichiers XML. Vérifiez leur contenu.");
+
+    processDataAndSetupNavigation(rows);
+    if (autoXmlStatus) {
+      const label = payload?.meta?.label || payload?.meta?.id || "mission";
+      autoXmlStatus.textContent = `Synthèse amiante chargée automatiquement pour ${label}.`;
     }
-  });
+  } catch (err) {
+    console.error("Impossible de charger la synthèse amiante automatique", err);
+    if (autoXmlStatus) autoXmlStatus.textContent = "Lecture automatique impossible. Relancez depuis le module administratif.";
+  }
 }
+
+chargerSyntheseAutomatique();
 
 function nettoyerNomPiece(nom) {
   if (!nom) return "Non précisé";

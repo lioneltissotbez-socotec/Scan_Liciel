@@ -80,6 +80,7 @@ async function parseMissionDirectory(dirHandle, folderName) {
   let photos = [];
   let domainConclusions = [];
   const domainFlags = new Set();
+  const amianteFiles = [];
   let photosDir = null;
   let imagesDir = null;
 
@@ -113,6 +114,9 @@ async function parseMissionDirectory(dirHandle, folderName) {
       domainConclusions = parseMultiRowTable(await readFileCorrectly(fileHandle));
     } else if (DOMAIN_FILES[lower]) {
       domainFlags.add(DOMAIN_FILES[lower]);
+      if (lower.startsWith("table_z_amiante")) {
+        amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
+      }
     }
   }
 
@@ -129,6 +133,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
 
   if (!general) return null; // pas une mission LICIEL valide
 
+  const amianteRows = amianteFiles.length ? buildAmianteRowsFromXml(amianteFiles, general) : [];
+
   return {
     id: folderName,
     label: folderName,
@@ -137,7 +143,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
     photos,
     domainConclusions,
     domains: Array.from(domainFlags),
-    media
+    media,
+    amianteRows
   };
 }
 
@@ -231,6 +238,170 @@ function parseMultiRowTable(xmlText) {
 
 function parsePhotoTable(xmlText) {
   return parseMultiRowTable(xmlText);
+}
+
+function buildAmianteRowsFromXml(files, generalInfo = {}) {
+  const parsed = { materiaux: [], prelevements: [], documents: [], ecarts: [], general: [] };
+
+  files.forEach(({ name, content }) => {
+    const lower = name.toLowerCase();
+    const rows = parseGenericXmlRows(content);
+    if (lower.includes("table_z_amiante_prelevements")) parsed.prelevements = rows;
+    else if (lower.includes("table_z_amiante_doc_remis")) parsed.documents = rows;
+    else if (lower.includes("table_z_amiante_ecart_norme")) parsed.ecarts = rows;
+    else if (lower.includes("table_z_amiante_general")) parsed.general = rows;
+    else if (lower.includes("table_z_amiante")) parsed.materiaux = rows;
+  });
+
+  const synthese = construireSyntheseDepuisXml(parsed);
+  return convertirSyntheseEnRows(synthese, generalInfo);
+}
+
+function parseGenericXmlRows(xmlText) {
+  const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+  if (xml.querySelector("parsererror")) return [];
+  const root = xml.documentElement;
+  const children = [...root.children].filter(el => el.nodeType === 1);
+  if (!children.length) return [transformerElementEnObjet(root)];
+  return children.map(el => transformerElementEnObjet(el));
+}
+
+function transformerElementEnObjet(element, prefix = "") {
+  const obj = {};
+  const keyPrefix = prefix ? `${prefix}.` : "";
+
+  if (element.attributes) {
+    [...element.attributes].forEach(attr => {
+      obj[`${keyPrefix}${attr.name}`] = (attr.value || "").trim();
+    });
+  }
+
+  const childElements = [...element.children].filter(el => el.nodeType === 1);
+  if (!childElements.length) {
+    obj[keyPrefix + element.tagName] = (element.textContent || "").trim();
+    return obj;
+  }
+
+  childElements.forEach(child => {
+    const childObj = transformerElementEnObjet(child, keyPrefix + child.tagName);
+    Object.entries(childObj).forEach(([k, v]) => {
+      obj[k] = v;
+    });
+  });
+
+  return obj;
+}
+
+function construireSyntheseDepuisXml(parsed) {
+  const generalInfo = parsed.general[0] || {};
+  const ecarts = parsed.ecarts || [];
+  const documents = parsed.documents || [];
+  const prelevements = parsed.prelevements || [];
+  const materiaux = parsed.materiaux || [];
+
+  const labNom = generalInfo.Labo_nom || generalInfo.nom_labo || generalInfo.Nom_labo || generalInfo.Labo || "";
+  const labAdresse = generalInfo.Labo_adresse || generalInfo.adresse_labo || generalInfo.Adresse_labo || generalInfo.Adresse || "";
+  const labVille = generalInfo.Labo_ville || generalInfo.ville_labo || generalInfo.Ville_labo || "";
+  const labCofrac = generalInfo.Labo_cofrac || generalInfo.cofrac || generalInfo.COFRAC || "";
+
+  const synthese = {
+    general: {
+      nb_prelevements: Number(generalInfo.nb_prelevements || generalInfo.Nb_prelevements || generalInfo.Nombre_prelevements || 0),
+      prefix_P: generalInfo.prefix_P || generalInfo.Prefix_P || "P",
+      prefix_ZPSO: generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-",
+      description_travaux: generalInfo.description_travaux || generalInfo.Description_travaux || "",
+      labo: {
+        nom: labNom,
+        cofrac: labCofrac,
+        adresse: labAdresse,
+        ville: labVille
+      }
+    },
+    documents: documents.map(doc => ({
+      type: doc.Document || doc.Type || doc.Nom || doc.Libelle || "",
+      remis: doc.Remis || doc.remis || doc.Statut || ""
+    })),
+    ecarts_norme: ecarts.map(item => ({
+      observation: item.Observation || item.observation || item.Nom || item.Libelle || "",
+      oui: normaliserBooleen(item.Oui || item.oui),
+      non: normaliserBooleen(item.Non || item.non),
+      so: normaliserBooleen(item.SO || item.so || item.SansObjet)
+    })),
+    materiaux: materiaux.map(mat => {
+      const numMat = mat.Num_Materiau || mat.Num_materiau || mat.num_materiau || mat.NumMateriau || mat.Num_Mat;
+      const zspo = mat.ZPSO || mat.applicabilite_ZPSO || mat.Applicabilite_ZPSO || mat.applicabilite_zspo || mat.Num_ZPSO;
+      const prelevementsAssocies = prelevements
+        .filter(p => {
+          const pMat = p.Num_Materiau || p.Num_materiau || p.NumMat || p.Num_mate;
+          return numMat && pMat && `${pMat}`.trim() === `${numMat}`.trim();
+        })
+        .map(p => {
+          const resLabo = p.Resultat_reperage || p.resultat_reperage || p.Conclusion || p.Resultat || p["API_Labo_DATA_XML.conclusion_text"] || p.conclusion_text || "";
+          const commentaireLabo = p.Commentaires || p.commentaire || p["API_Labo_DATA_XML.commentaire"] || "";
+          return {
+            id: p.Num_Prelevement || p.num_prelevement || p.Id || "",
+            resultat: resLabo,
+            commentaires_labo: commentaireLabo,
+            pv: p.PV || p.pv || p.Justificatif || ""
+          };
+        });
+
+      return {
+        localisation: mat.Local_visite || mat.Localisation || mat.Zone || "",
+        ouvrage: mat.Ouvrage || mat.Ouvrage_porteur || mat.Ouvrage_support || "",
+        partie: mat.Partie || mat.Partie_inspectee || mat.Partie_observee || "",
+        description: mat.materiau_produit || mat.Materiau || mat.Description || "",
+        zspo: zspo || (numMat ? `${(generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-")}${numMat}` : ""),
+        resultat: mat.resultat || mat.Resultat || mat.Resultat_reperage || "",
+        justification: mat.Justification || mat.Mode_operatoire || mat.Mode || "",
+        prelevements: prelevementsAssocies,
+        commentaires: mat.commentaires || mat.Commentaire || "",
+        photos: mat.photos || mat.Photo || mat.PJ || ""
+      };
+    })
+  };
+
+  return synthese;
+}
+
+function convertirSyntheseEnRows(synthese, generalInfo = {}) {
+  const commune = generalInfo.LiColonne_Immeuble_Commune || "";
+  const adresse = generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.LiColonne_Immeuble_Batiment || generalInfo.LiColonne_Immeuble_Nom || "";
+  const numUG = generalInfo.LiColonne_Loc_Lot || generalInfo.LiColonne_Immeuble_Lot || generalInfo.LiColonne_Immeuble_Loc_copro || generalInfo.LiColonne_Loc_Numero || "UG";
+  const date = generalInfo.LiColonne_Gen_Date_rapport || generalInfo.LiColonne_Gen_Date || generalInfo.LiColonne_Gen_Date_mission || "";
+  const operateur = generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.LiColonne_Gen_Operateur || "";
+  const rapport = generalInfo.LiColonne_Gen_Num_rapport || generalInfo.LiColonne_Gen_Numero_rapport || "";
+  const etage = generalInfo.LiColonne_Loc_Etage || generalInfo.LiColonne_Immeuble_Etage || "";
+
+  return (synthese.materiaux || []).map((mat, idx) => {
+    const prelevementIds = (mat.prelevements || []).map(p => p.id).filter(Boolean).join(", ");
+    const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
+    const nomEI = mat.localisation || adresse || "Adresse non précisée";
+    const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
+
+    return {
+      Nom_EI: nomEI,
+      Num_UG: mat.zspo || `${numUG}-${idx + 1}`,
+      Commune: commune,
+      date_realisation: date,
+      operateur,
+      reference_rapport: rapport,
+      Etage: etage,
+      applicabilite_ZPSO: mat.zspo || "",
+      Local_visite: mat.localisation || "",
+      num_prelevement: prelevementIds,
+      resultat,
+      materiau_produit: produit || "Non précisé",
+      zone: mat.ouvrage || "",
+      commentaires: mat.commentaires || ""
+    };
+  });
+}
+
+function normaliserBooleen(valeur) {
+  if (valeur === undefined || valeur === null) return false;
+  const v = `${valeur}`.trim().toLowerCase();
+  return v === "oui" || v === "true" || v === "1" || v === "x";
 }
 
 /********************************************************************
@@ -746,8 +917,9 @@ function buildDomainActions(mission) {
   if (!domains.length) return "";
 
   const links = [];
-  if (domains.includes("Amiante")) {
-    links.push(`<a class="domain-action-btn" href="amiante.html" target="_blank" rel="noopener">Synthèse amiante</a>`);
+  if (domains.includes("Amiante") && mission.amianteRows && mission.amianteRows.length) {
+    const safeId = (mission.id || "").replace(/'/g, "&#39;");
+    links.push(`<button class="domain-action-btn" type="button" onclick="openAmianteForMission('${safeId}')">Synthèse amiante</button>`);
   }
 
   if (!links.length) return "";
@@ -767,6 +939,22 @@ function escapeHtml(str) {
     "'": "&#39;"
   }[c] || c));
 }
+
+window.openAmianteForMission = function (missionId) {
+  const mission = allMissions.find(m => m.id === missionId);
+  if (!mission || !mission.amianteRows || !mission.amianteRows.length) {
+    alert("Aucune donnée amiante disponible pour cette mission.");
+    return;
+  }
+
+  const payload = {
+    rows: mission.amianteRows,
+    meta: { id: mission.id, label: mission.label }
+  };
+
+  sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
+  window.open("amiante.html", "_blank", "noopener");
+};
 
 /**
  * Convertit un nom de colonne XML en libellé plus lisible pour l'affichage.
