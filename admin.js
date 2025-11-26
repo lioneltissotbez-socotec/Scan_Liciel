@@ -382,6 +382,52 @@ function showMissionDetail(id) {
   });
   html += `</div>`;
 
+  const odmFields = [
+    ["Type d'ordre", g.LiColonne_DOrdre_Type],
+    ["Donneur d'ordre – entête", g.LiColonne_DOrdre_Entete],
+    ["Donneur d'ordre – nom", g.LiColonne_DOrdre_Nom],
+    ["Donneur d'ordre – adresse", g.LiColonne_DOrdre_Adresse1],
+    ["Donneur d'ordre – département", g.LiColonne_DOrdre_Departement],
+    ["Donneur d'ordre – commune", g.LiColonne_DOrdre_Commune],
+    ["Propriétaire – entête", g.LiColonne_Prop_Entete],
+    ["Propriétaire – nom", g.LiColonne_Prop_Nom],
+    ["Propriétaire – adresse", g.LiColonne_Prop_Adresse1],
+    ["Propriétaire – département", g.LiColonne_Prop_Departement],
+    ["Propriétaire – commune", g.LiColonne_Prop_Commune],
+    ["Adresse immeuble", g.LiColonne_Immeuble_Adresse1],
+    ["Département immeuble", g.LiColonne_Immeuble_Departement],
+    ["Commune immeuble", g.LiColonne_Immeuble_Commune],
+    ["Accompagnateur", g.LiColonne_Immeuble_Accompagnateur],
+    ["Lot", g.LiColonne_Immeuble_Lot],
+    ["Cadastre", g.LiColonne_Immeuble_Cadastre],
+    ["Localisation copropriété", g.LiColonne_Immeuble_Loc_copro],
+    ["Nature du bien", g.LiColonne_Immeuble_Nature_bien],
+    ["Type de bien", g.LiColonne_Immeuble_Type_bien],
+    ["Type de dossier", g.LiColonne_Immeuble_Type_Dossier],
+    ["Occupé / vide", g.LiColonne_Immeuble_Occupe_vide],
+    ["Description", g.LiColonne_Immeuble_Description],
+    ["N° dossier", g.LiColonne_Mission_Num_Dossier],
+    ["Durée de mission", g.LiColonne_Mission_Duree_mission],
+    ["Date de visite", g.LiColonne_Mission_Date_Visite],
+    ["Date du rapport", g.LiColonne_Mission_Date_Rapport],
+    ["Missions programmées", g.LiColonne_Mission_Missions_programmees],
+    ["Heure d'arrivée", g.LiColonne_Mission_Heure_Arrivee],
+    ["Opérateur", g.LiColonne_Gen_Nom_operateur],
+    ["Opérateur – nom", g.LiColonne_Gen_Nom_operateur_UniquementNomFamille],
+    ["Opérateur – prénom", g.LiColonne_Gen_Nom_operateur_UniquementPreNom],
+    ["Certification société", g.LiColonne_Gen_certif_societe],
+    ["Mémo terrain", g.LiColonne_Texte_memo_terrain],
+    ["Notes libres", g.LiColonne_Notes_libres],
+  ];
+  const filledOdmFields = odmFields.filter(([, val]) => val && val.trim());
+  if (filledOdmFields.length) {
+    html += `<div class="detail-section"><h3>Ordre de mission (ODM)</h3>`;
+    filledOdmFields.forEach(([label, val]) => {
+      html += `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(val)}</p>`;
+    });
+    html += `</div>`;
+  }
+
   html += `<div class="detail-section"><h3>Adresse</h3>`;
   const addrFields = [
     ["Adresse", g.LiColonne_Immeuble_Adresse1],
