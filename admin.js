@@ -80,13 +80,21 @@ async function parseMissionDirectory(dirHandle, folderName) {
   let photos = [];
   let domainConclusions = [];
   const domainFlags = new Set();
+  let photosDir = null;
+  let imagesDir = null;
 
   // Cherche un sous-dossier "XML"
   let xmlDir = null;
   for await (const [n, h] of dirHandle.entries()) {
-    if (h.kind === "directory" && n.toLowerCase() === "xml") {
-      xmlDir = h;
-      break;
+    if (h.kind === "directory") {
+      const lower = n.toLowerCase();
+      if (lower === "xml") {
+        xmlDir = h;
+      } else if (lower === "photos") {
+        photosDir = h;
+      } else if (lower === "images") {
+        imagesDir = h;
+      }
     }
   }
   const target = xmlDir || dirHandle;
@@ -108,6 +116,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
     }
   }
 
+  const media = await collectMissionMedia({ photosDir, imagesDir });
+
   if (!general) return null; // pas une mission LICIEL valide
 
   return {
@@ -117,8 +127,49 @@ async function parseMissionDirectory(dirHandle, folderName) {
     conclusions,
     photos,
     domainConclusions,
-    domains: Array.from(domainFlags)
+    domains: Array.from(domainFlags),
+    media
   };
+}
+
+async function collectMissionMedia({ photosDir, imagesDir }) {
+  const media = { presentationImage: null, dpeEtiquettes: [] };
+
+  if (photosDir) {
+    for await (const [fileName, fileHandle] of photosDir.entries()) {
+      if (fileHandle.kind !== "file") continue;
+      if (fileName.toLowerCase() === "presentation.jpg") {
+        const url = await createObjectUrl(fileHandle);
+        if (url) {
+          media.presentationImage = { url, name: fileName };
+        }
+      }
+    }
+  }
+
+  if (imagesDir) {
+    for await (const [fileName, fileHandle] of imagesDir.entries()) {
+      if (fileHandle.kind !== "file") continue;
+      if (fileName.toLowerCase().includes("etiquette")) {
+        const url = await createObjectUrl(fileHandle);
+        if (url) {
+          media.dpeEtiquettes.push({ url, name: fileName });
+        }
+      }
+    }
+  }
+
+  return media;
+}
+
+async function createObjectUrl(fileHandle) {
+  try {
+    const file = await fileHandle.getFile();
+    return URL.createObjectURL(file);
+  } catch (e) {
+    console.warn("Impossible de charger le fichier", e);
+    return null;
+  }
 }
 
 /********************************************************************
@@ -596,18 +647,53 @@ function buildMissionDetailHtml(mission) {
     }
   }
 
-  if (mission.photos && mission.photos.length) {
-    html += `<div class="detail-section"><h3>Photos</h3><div class="photo-grid">`;
-    mission.photos.forEach(p => {
+  const media = mission.media || {};
+  const hasPresentation = !!media.presentationImage;
+  const hasEtiquettes = media.dpeEtiquettes && media.dpeEtiquettes.length;
+  const hasPhotoMeta = mission.photos && mission.photos.length;
+
+  if (hasPresentation || hasEtiquettes || hasPhotoMeta) {
+    html += `<div class="detail-section"><h3>Présentation et Images</h3><div class="photo-grid">`;
+
+    if (hasPresentation) {
       html += `
         <div class="photo-card">
-          <div class="photo-card__title">${escapeHtml(p.Titre || "Photo")}</div>
-          ${p.legende ? `<div class="photo-card__legend">${escapeHtml(p.legende)}</div>` : ""}
-          ${p.fichier ? `<div class="pill-label">${escapeHtml(p.fichier)}</div>` : ""}
-          ${p.date ? `<div class='muted'>${escapeHtml(p.date)}</div>` : ""}
+          <div class="photo-card__image">
+            <img src="${media.presentationImage.url}" alt="Présentation du bien" loading="lazy" />
+          </div>
+          <div class="photo-card__title">Présentation du bien</div>
+          <div class="muted">${escapeHtml(media.presentationImage.name || "presentation.jpg")}</div>
         </div>
       `;
-    });
+    }
+
+    if (hasEtiquettes) {
+      media.dpeEtiquettes.forEach((etiquette, idx) => {
+        html += `
+          <div class="photo-card">
+            <div class="photo-card__image">
+              <img src="${etiquette.url}" alt="Étiquette DPE ${escapeHtml(etiquette.name || "")}" loading="lazy" />
+            </div>
+            <div class="photo-card__title">Étiquette DPE ${idx + 1}</div>
+            <div class="muted">${escapeHtml(etiquette.name || "Étiquette DPE")}</div>
+          </div>
+        `;
+      });
+    }
+
+    if (hasPhotoMeta) {
+      mission.photos.forEach(p => {
+        html += `
+          <div class="photo-card photo-card--meta">
+            <div class="photo-card__title">${escapeHtml(p.Titre || "Photo")}</div>
+            ${p.legende ? `<div class="photo-card__legend">${escapeHtml(p.legende)}</div>` : ""}
+            ${p.fichier ? `<div class="pill-label">${escapeHtml(p.fichier)}</div>` : ""}
+            ${p.date ? `<div class='muted'>${escapeHtml(p.date)}</div>` : ""}
+          </div>
+        `;
+      });
+    }
+
     html += `</div></div>`;
   }
 
