@@ -557,10 +557,15 @@ function buildMissionDetailHtml(mission) {
     return "<p class='muted'>Mission introuvable.</p>";
   }
 
+  const domainActions = buildDomainActions(mission);
+
   let html = `
     <div class="inline-detail__header">
       <div class="inline-detail__title">Détail de la mission – ${escapeHtml(mission.label || mission.id)}</div>
-      <button class="inline-detail__close" type="button">Fermer</button>
+      <div class="inline-detail__actions">
+        ${domainActions}
+        <button class="inline-detail__close" type="button">Fermer</button>
+      </div>
     </div>
     <div class="detail-section"><h3>Identité mission</h3><div class="info-grid">
   `;
@@ -734,6 +739,20 @@ function buildFieldGroup(title, pairs) {
   ).join("");
 
   return `<div class="info-card"><div class="info-card__header">${escapeHtml(title)}</div>${content}</div>`;
+}
+
+function buildDomainActions(mission) {
+  const domains = detectDomains(mission);
+  if (!domains.length) return "";
+
+  const links = [];
+  if (domains.includes("Amiante")) {
+    links.push(`<a class="domain-action-btn" href="amiante.html" target="_blank" rel="noopener">Synthèse amiante</a>`);
+  }
+
+  if (!links.length) return "";
+
+  return `<div class="domain-actions"><span class="domain-actions__label">Modules :</span>${links.join("")}</div>`;
 }
 
 /********************************************************************
