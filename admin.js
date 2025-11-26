@@ -914,10 +914,11 @@ function buildFieldGroup(title, pairs) {
 
 function buildDomainActions(mission) {
   const domains = detectDomains(mission);
-  if (!domains.length) return "";
+  const hasAmianteData = mission.amianteRows && mission.amianteRows.length;
+  if (!domains.length && !hasAmianteData) return "";
 
   const links = [];
-  if (domains.includes("Amiante") && mission.amianteRows && mission.amianteRows.length) {
+  if (domains.includes("Amiante") || hasAmianteData) {
     const safeId = (mission.id || "").replace(/'/g, "&#39;");
     links.push(`<button class="domain-action-btn" type="button" onclick="openAmianteForMission('${safeId}')">Synthèse amiante</button>`);
   }
