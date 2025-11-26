@@ -23,10 +23,6 @@
     <section class="card">
       <h2>2. Filtres</h2>
       <div id="filterButtons" class="filter-buttons"></div>
-      <div class="domain-filter-block">
-        <h3>Domaines</h3>
-        <div id="domainFilters" class="domain-filters"></div>
-      </div>
     </section>
 
     <section class="card" id="filterValuesBlock" style="display:none;">
@@ -39,7 +35,13 @@
     <section class="card">
       <div class="card-header-row">
         <h2>3. Synthèse des missions</h2>
-        <span id="missionsCount" class="badge"></span>
+        <div class="card-header-actions">
+          <div class="domain-filter-bar">
+            <span class="domain-filter-title">Domaines</span>
+            <div id="domainFilters" class="domain-filters"></div>
+          </div>
+          <span id="missionsCount" class="badge"></span>
+        </div>
       </div>
       <div id="missionsList" class="table-wrapper"></div>
     </section>

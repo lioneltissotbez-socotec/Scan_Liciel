@@ -165,38 +165,28 @@ button:disabled {
   overflow: auto;
 }
 
-.domain-filter-block {
-  margin-top: 12px;
-  border-top: 1px dashed #e5e7eb;
-  padding-top: 10px;
-}
-
 .domain-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .domain-filter {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
   border: 1px solid #e5e7eb;
   background: #f8fafc;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  min-width: 52px;
 }
 
 .domain-filter__label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 12px;
+  font-size: 13px;
   color: #111827;
-  text-align: center;
 }
 
 .domain-filter input[type="checkbox"] {
@@ -234,6 +224,27 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.domain-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.domain-filter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
 }
 
 /* ========== TABLE ========== */
