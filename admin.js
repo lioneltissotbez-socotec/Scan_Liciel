@@ -673,7 +673,8 @@ function buildMissionDetailHtml(mission) {
   const media = mission.media || {};
   const hasPresentation = !!media.presentationImage;
   const hasEtiquettes = media.dpeEtiquettes && media.dpeEtiquettes.length;
-  const hasPhotoMeta = mission.photos && mission.photos.length;
+  const linkedPhotos = (mission.photos || []).filter(p => p.url);
+  const hasPhotoMeta = linkedPhotos.length > 0;
 
   if (hasPresentation || hasEtiquettes || hasPhotoMeta) {
     html += `<div class="detail-section"><h3>Présentation et Images</h3><div class="photo-grid">`;
@@ -705,13 +706,10 @@ function buildMissionDetailHtml(mission) {
     }
 
     if (hasPhotoMeta) {
-      mission.photos.forEach(p => {
-        const imageBlock = p.url
-          ? `<div class="photo-card__image"><img src="${p.url}" alt="${escapeHtml(p.Titre || "Photo")}" loading="lazy" /></div>`
-          : "";
+      linkedPhotos.forEach(p => {
         html += `
           <div class="photo-card photo-card--meta">
-            ${imageBlock}
+            <div class="photo-card__image"><img src="${p.url}" alt="${escapeHtml(p.Titre || "Photo")}" loading="lazy" /></div>
             <div class="photo-card__title">${escapeHtml(p.Titre || "Photo")}</div>
             ${p.legende ? `<div class="photo-card__legend">${escapeHtml(p.legende)}</div>` : ""}
             ${p.fichier ? `<div class="pill-label">${escapeHtml(p.fichier)}</div>` : ""}
