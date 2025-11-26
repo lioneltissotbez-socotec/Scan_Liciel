@@ -150,9 +150,7 @@ async function chargerSyntheseDepuisXmlLocal() {
       if (!response.ok) continue;
       const text = await response.text();
       const doc = parser.parseFromString(text, "application/xml");
-      if (doc.querySelector("parsererror")) continue;
-
-      const rows = extraireLignesXml(doc);
+      const rows = extraireLignesXml(doc, text, fichier.name);
       parsed[fichier.key] = (parsed[fichier.key] || []).concat(rows);
       fichiersTrouves++;
     } catch (err) {
@@ -169,7 +167,8 @@ async function chargerSyntheseDepuisXmlLocal() {
 
   try {
     const synthese = construireSyntheseDepuisXml(parsed);
-    const rows = convertirSyntheseEnRows(synthese, parsed.general[0] || {});
+    const generalInfo = synthese.sourceGeneral || parsed.general[0] || {};
+    const rows = convertirSyntheseEnRows(synthese, generalInfo);
 
     if (!rows.length) {
       if (autoXmlStatus) autoXmlStatus.textContent = "XML amiante détectés mais aucune donnée exploitable.";
@@ -179,7 +178,7 @@ async function chargerSyntheseDepuisXmlLocal() {
     processDataAndSetupNavigation(rows);
     if (autoXmlStatus) autoXmlStatus.textContent = "Synthèse amiante générée depuis les XML présents localement.";
 
-    const payload = { rows, meta: { id: parsed.general[0]?.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" } };
+    const payload = { rows, meta: { id: generalInfo.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" } };
     sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
   } catch (err) {
     console.error("Impossible de générer la synthèse amiante à partir des XML locaux", err);
@@ -476,16 +475,16 @@ async function lireFichiersXml(files) {
   const parser = new DOMParser();
   const contents = await Promise.all(files.map(file => new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = e => resolve({ name: file.name, doc: parser.parseFromString(e.target.result, "application/xml") });
+    reader.onload = e => resolve({ name: file.name, text: e.target.result, doc: parser.parseFromString(e.target.result, "application/xml") });
     reader.onerror = reject;
     reader.readAsText(file);
   })));
 
   const result = { materiaux: [], prelevements: [], documents: [], ecarts: [], general: [] };
 
-  contents.forEach(({ name, doc }) => {
+  contents.forEach(({ name, doc, text }) => {
     const lower = name.toLowerCase();
-    const rows = extraireLignesXml(doc);
+    const rows = extraireLignesXml(doc, text, name);
     if (lower.includes("table_z_amiante_prelevements")) result.prelevements = rows;
     else if (lower.includes("table_z_amiante_doc_remis")) result.documents = rows;
     else if (lower.includes("table_z_amiante_ecart_norme")) result.ecarts = rows;
@@ -496,11 +495,87 @@ async function lireFichiersXml(files) {
   return result;
 }
 
-function extraireLignesXml(doc) {
+function extraireLignesXml(doc, rawText = "", fichierName = "") {
   const root = doc.documentElement;
-  const children = Array.from(root.children).filter(el => el.nodeType === 1);
-  if (!children.length) return [transformerElementEnObjet(root)];
-  return children.map(el => transformerElementEnObjet(el));
+  const parserErreur = root?.querySelector && root.querySelector("parsererror");
+  if (parserErreur) return extraireLignesDepuisTexte(rawText, fichierName);
+
+  const children = Array.from(root.children || []).filter(el => el.nodeType === 1);
+  if (!children.length) {
+    const obj = transformerElementEnObjet(root);
+    if (Object.keys(obj).length <= 1) return extraireLignesDepuisTexte(rawText, fichierName);
+    return [obj];
+  }
+
+  const lignes = children.map(el => transformerElementEnObjet(el));
+  if (!lignes.length) return extraireLignesDepuisTexte(rawText, fichierName);
+  return lignes;
+}
+
+function extraireLignesDepuisTexte(rawText = "", fichierName = "") {
+  const text = `${rawText}`;
+
+  const parseItems = (itemTag) => {
+    const pattern = new RegExp(`<${itemTag}>([\\s\\S]*?)</${itemTag}>`, "gi");
+    const items = [];
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const rawItem = match[1];
+      const obj = {};
+      const reg = /<([^\/>]+)>([\s\S]*?)<\/\1>/g;
+      let sub;
+      while ((sub = reg.exec(rawItem)) !== null) {
+        const key = sub[1].trim();
+        obj[key] = nettoyerTexteXml(sub[2]);
+        if (key.startsWith("LiColonne_")) obj[key.replace("LiColonne_", "")] = obj[key];
+      }
+      items.push(obj);
+    }
+    return items;
+  };
+
+  if (/liitem_table_z_amiante_prelevements/i.test(text)) {
+    const items = parseItems("LiItem_table_Z_Amiante_prelevements");
+    return items.map(item => ({
+      ...item,
+      Num_Materiau: item.Num_Materiau || item.Reperage_3,
+      Resultat_reperage: item.Resultat_reperage || item.Resultats,
+      num_prelevement: item.Num_Prelevement || item.num_prelevement
+    }));
+  }
+
+  if (/liitem_table_z_amiante/i.test(text)) {
+    const items = parseItems("LiItem_table_Z_Amiante");
+    return items.map(item => ({
+      ...item,
+      Local_visite: item.Local_visite || item.Localisation || item.Detail_loc,
+      Ouvrage: item.Ouvrage || item.Ouvrages,
+      Partie: item.Partie || item.Partie_Inspectee,
+      materiau_produit: item.materiau_produit || item.Description || item.Partie_Inspectee,
+      resultat: item.resultat || item.Resultats,
+      num_prelevement: item.num_prelevement || item.Num_Prelevement,
+      Num_Materiau: item.Num_Materiau || item.Reperage_3 || item.Id_Prelevement_Int_txt,
+      Num_ZPSO: item.Num_ZPSO || item.Id_Prelevement,
+      Dossier_Materiau: item.Dossier_Materiau || item.LiColonne_Dossier_Materiau
+    }));
+  }
+
+  const colonneMatches = [...text.matchAll(/<LiColonne_([^>]+)>([\s\S]*?)<\/LiColonne_\1>/g)];
+  if (colonneMatches.length) {
+    const obj = {};
+    colonneMatches.forEach(([, key, val]) => {
+      obj[`LiColonne_${key}`] = nettoyerTexteXml(val);
+    });
+    return [obj];
+  }
+
+  if (!text.trim()) return [];
+  console.warn(`XML brut non reconnu pour ${fichierName}`);
+  return [];
+}
+
+function nettoyerTexteXml(valeur = "") {
+  return `${valeur}`.replace(/\s+/g, " ").trim();
 }
 
 function transformerElementEnObjet(element, prefix = "") {
@@ -536,17 +611,22 @@ function construireSyntheseDepuisXml(parsed) {
   const prelevements = parsed.prelevements || [];
   const materiaux = parsed.materiaux || [];
 
-  const labNom = generalInfo.Labo_nom || generalInfo.nom_labo || generalInfo.Nom_labo || generalInfo.Labo || "";
-  const labAdresse = generalInfo.Labo_adresse || generalInfo.adresse_labo || generalInfo.Adresse_labo || generalInfo.Adresse || "";
-  const labVille = generalInfo.Labo_ville || generalInfo.ville_labo || generalInfo.Ville_labo || "";
-  const labCofrac = generalInfo.Labo_cofrac || generalInfo.cofrac || generalInfo.COFRAC || "";
+  const generalWithFallback = Object.keys(generalInfo).length ? generalInfo : (() => {
+    const dossier = materiaux[0]?.Dossier_Materiau || materiaux[0]?.LiColonne_Dossier_Materiau || "";
+    return dossier ? { LiColonne_Gen_Num_rapport: dossier } : {};
+  })();
+
+  const labNom = generalWithFallback.Labo_nom || generalWithFallback.nom_labo || generalWithFallback.Nom_labo || generalWithFallback.Labo || "";
+  const labAdresse = generalWithFallback.Labo_adresse || generalWithFallback.adresse_labo || generalWithFallback.Adresse_labo || generalWithFallback.Adresse || "";
+  const labVille = generalWithFallback.Labo_ville || generalWithFallback.ville_labo || generalWithFallback.Ville_labo || "";
+  const labCofrac = generalWithFallback.Labo_cofrac || generalWithFallback.cofrac || generalWithFallback.COFRAC || "";
 
   const synthese = {
     general: {
-      nb_prelevements: Number(generalInfo.nb_prelevements || generalInfo.Nb_prelevements || generalInfo.Nombre_prelevements || 0),
-      prefix_P: generalInfo.prefix_P || generalInfo.Prefix_P || "P",
-      prefix_ZPSO: generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-",
-      description_travaux: generalInfo.description_travaux || generalInfo.Description_travaux || "",
+      nb_prelevements: Number(generalWithFallback.nb_prelevements || generalWithFallback.Nb_prelevements || generalWithFallback.Nombre_prelevements || generalWithFallback.LiColonne_Nb_Prelevement || 0),
+      prefix_P: generalWithFallback.prefix_P || generalWithFallback.Prefix_P || generalWithFallback.LiColonne_Prelevement_Perfixe || "P",
+      prefix_ZPSO: generalWithFallback.prefix_ZPSO || generalWithFallback.Prefix_ZPSO || generalWithFallback.LiColonne_Materiaux_Perfixe || generalWithFallback.LiColonne_ZPSO_Perfixe || "ZPSO-",
+      description_travaux: generalWithFallback.description_travaux || generalWithFallback.Description_travaux || generalWithFallback.LiColonne_Description_travaux || "",
       labo: {
         nom: labNom,
         cofrac: labCofrac,
@@ -598,7 +678,7 @@ function construireSyntheseDepuisXml(parsed) {
     })
   };
 
-  return synthese;
+  return { ...synthese, sourceGeneral: generalWithFallback };
 }
 
 function convertirSyntheseEnRows(synthese, generalInfo = {}) {
