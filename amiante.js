@@ -8,6 +8,9 @@ let groupedData = {};
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const generateBtn = document.getElementById("generateBtn");
+const xmlInput = document.getElementById("xmlInput");
+const parseXmlBtn = document.getElementById("parseXmlBtn");
+const xmlOutput = document.getElementById("xmlOutput");
 
 if (dropZone) {
   dropZone.addEventListener("dragover", e => {
@@ -45,6 +48,25 @@ if (generateBtn) {
       processDataAndSetupNavigation(data);
     };
     reader.readAsArrayBuffer(fileInput.files[0]);
+  });
+}
+
+if (parseXmlBtn && xmlInput) {
+  parseXmlBtn.addEventListener("click", async () => {
+    if (!xmlInput.files.length) {
+      alert("Merci de sélectionner les XML LICIEL exportés.");
+      return;
+    }
+    try {
+      const parsedFiles = await lireFichiersXml(Array.from(xmlInput.files));
+      const synthesis = construireSyntheseDepuisXml(parsedFiles);
+      if (xmlOutput) {
+        xmlOutput.textContent = JSON.stringify(synthesis, null, 2);
+      }
+    } catch (err) {
+      console.error("Erreur lors de la lecture des XML", err);
+      alert("Impossible de lire les fichiers XML. Vérifiez leur contenu.");
+    }
   });
 }
 
@@ -331,4 +353,139 @@ function generateHTML(data) {
 
   renderVuePiece();
   container.appendChild(logementDiv);
+}
+
+async function lireFichiersXml(files) {
+  const parser = new DOMParser();
+  const contents = await Promise.all(files.map(file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve({ name: file.name, doc: parser.parseFromString(e.target.result, "application/xml") });
+    reader.onerror = reject;
+    reader.readAsText(file);
+  })));
+
+  const result = { materiaux: [], prelevements: [], documents: [], ecarts: [], general: [] };
+
+  contents.forEach(({ name, doc }) => {
+    const lower = name.toLowerCase();
+    const rows = extraireLignesXml(doc);
+    if (lower.includes("table_z_amiante_prelevements")) result.prelevements = rows;
+    else if (lower.includes("table_z_amiante_doc_remis")) result.documents = rows;
+    else if (lower.includes("table_z_amiante_ecart_norme")) result.ecarts = rows;
+    else if (lower.includes("table_z_amiante_general")) result.general = rows;
+    else if (lower.includes("table_z_amiante")) result.materiaux = rows;
+  });
+
+  return result;
+}
+
+function extraireLignesXml(doc) {
+  const root = doc.documentElement;
+  const children = Array.from(root.children).filter(el => el.nodeType === 1);
+  if (!children.length) return [transformerElementEnObjet(root)];
+  return children.map(el => transformerElementEnObjet(el));
+}
+
+function transformerElementEnObjet(element, prefix = "") {
+  const obj = {};
+  const keyPrefix = prefix ? `${prefix}.` : "";
+
+  if (element.attributes) {
+    Array.from(element.attributes).forEach(attr => {
+      obj[`${keyPrefix}${attr.name}`] = attr.value.trim();
+    });
+  }
+
+  const childElements = Array.from(element.children).filter(el => el.nodeType === 1);
+  if (!childElements.length) {
+    obj[keyPrefix + element.tagName] = (element.textContent || "").trim();
+    return obj;
+  }
+
+  childElements.forEach(child => {
+    const childObj = transformerElementEnObjet(child, keyPrefix + child.tagName);
+    Object.entries(childObj).forEach(([k, v]) => {
+      obj[k] = v;
+    });
+  });
+
+  return obj;
+}
+
+function construireSyntheseDepuisXml(parsed) {
+  const generalInfo = parsed.general[0] || {};
+  const ecarts = parsed.ecarts || [];
+  const documents = parsed.documents || [];
+  const prelevements = parsed.prelevements || [];
+  const materiaux = parsed.materiaux || [];
+
+  const labNom = generalInfo.Labo_nom || generalInfo.nom_labo || generalInfo.Nom_labo || generalInfo.Labo || "";
+  const labAdresse = generalInfo.Labo_adresse || generalInfo.adresse_labo || generalInfo.Adresse_labo || generalInfo.Adresse || "";
+  const labVille = generalInfo.Labo_ville || generalInfo.ville_labo || generalInfo.Ville_labo || "";
+  const labCofrac = generalInfo.Labo_cofrac || generalInfo.cofrac || generalInfo.COFRAC || "";
+
+  const synthese = {
+    general: {
+      nb_prelevements: Number(generalInfo.nb_prelevements || generalInfo.Nb_prelevements || generalInfo.Nombre_prelevements || 0),
+      prefix_P: generalInfo.prefix_P || generalInfo.Prefix_P || "P",
+      prefix_ZPSO: generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-",
+      description_travaux: generalInfo.description_travaux || generalInfo.Description_travaux || "",
+      labo: {
+        nom: labNom,
+        cofrac: labCofrac,
+        adresse: labAdresse,
+        ville: labVille
+      }
+    },
+    documents: documents.map(doc => ({
+      type: doc.Document || doc.Type || doc.Nom || doc.Libelle || "",
+      remis: doc.Remis || doc.remis || doc.Statut || ""
+    })),
+    ecarts_norme: ecarts.map(item => ({
+      observation: item.Observation || item.observation || item.Nom || item.Libelle || "",
+      oui: normaliserBooleen(item.Oui || item.oui),
+      non: normaliserBooleen(item.Non || item.non),
+      so: normaliserBooleen(item.SO || item.so || item.SansObjet)
+    })),
+    materiaux: materiaux.map(mat => {
+      const numMat = mat.Num_Materiau || mat.Num_materiau || mat.num_materiau || mat.NumMateriau || mat.Num_Mat;
+      const zspo = mat.ZPSO || mat.applicabilite_ZPSO || mat.Applicabilite_ZPSO || mat.applicabilite_zspo || mat.Num_ZPSO;
+      const prelevementsAssocies = prelevements
+        .filter(p => {
+          const pMat = p.Num_Materiau || p.Num_materiau || p.NumMat || p.Num_mate;
+          return numMat && pMat && `${pMat}`.trim() === `${numMat}`.trim();
+        })
+        .map(p => {
+          const resLabo = p.Resultat_reperage || p.resultat_reperage || p.Conclusion || p.Resultat || p["API_Labo_DATA_XML.conclusion_text"] || p.conclusion_text || "";
+          const commentaireLabo = p.Commentaires || p.commentaire || p["API_Labo_DATA_XML.commentaire"] || "";
+          return {
+            id: p.Num_Prelevement || p.num_prelevement || p.Id || "",
+            resultat: resLabo,
+            commentaires_labo: commentaireLabo,
+            pv: p.PV || p.pv || p.Justificatif || ""
+          };
+        });
+
+      return {
+        localisation: mat.Local_visite || mat.Localisation || mat.Zone || "",
+        ouvrage: mat.Ouvrage || mat.Ouvrage_porteur || mat.Ouvrage_support || "",
+        partie: mat.Partie || mat.Partie_inspectee || mat.Partie_observee || "",
+        description: mat.materiau_produit || mat.Materiau || mat.Description || "",
+        zspo: zspo || (numMat ? `${(generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-")}${numMat}` : ""),
+        resultat: mat.resultat || mat.Resultat || mat.Resultat_reperage || "",
+        justification: mat.Justification || mat.Mode_operatoire || mat.Mode || "",
+        prelevements: prelevementsAssocies,
+        commentaires: mat.commentaires || mat.Commentaire || "",
+        photos: mat.photos || mat.Photo || mat.PJ || ""
+      };
+    })
+  };
+
+  return synthese;
+}
+
+function normaliserBooleen(valeur) {
+  if (valeur === undefined || valeur === null) return false;
+  const v = `${valeur}`.trim().toLowerCase();
+  return v === "oui" || v === "true" || v === "1" || v === "x";
 }
