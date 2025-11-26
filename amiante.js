@@ -9,6 +9,29 @@ const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const generateBtn = document.getElementById("generateBtn");
 const autoXmlStatus = document.getElementById("autoXmlStatus");
+const jsonModal = document.getElementById("jsonModal");
+const jsonModalBody = document.getElementById("jsonModalBody");
+const jsonModalTitle = document.getElementById("jsonModalTitle");
+const closeJsonModal = document.getElementById("closeJsonModal");
+const jsonDebugButtons = document.querySelectorAll("[data-json-path]");
+
+jsonDebugButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const path = btn.getAttribute("data-json-path");
+    const label = btn.getAttribute("data-json-label") || path;
+    afficherJsonDansModal(path, label);
+  });
+});
+
+if (closeJsonModal) closeJsonModal.addEventListener("click", fermerJsonModal);
+if (jsonModal?.querySelector) {
+  const backdrop = jsonModal.querySelector(".json-modal__backdrop");
+  if (backdrop) backdrop.addEventListener("click", fermerJsonModal);
+}
+
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") fermerJsonModal();
+});
 
 if (dropZone) {
   dropZone.addEventListener("dragover", e => {
@@ -47,6 +70,48 @@ if (generateBtn) {
     };
     reader.readAsArrayBuffer(fileInput.files[0]);
   });
+}
+
+async function afficherJsonDansModal(path, label = "Fichier JSON") {
+  if (!jsonModal || !jsonModalBody) {
+    alert(`Impossible d'afficher ${label} : fenêtre modale absente.`);
+    return;
+  }
+
+  jsonModal.style.display = "grid";
+  document.body.style.overflow = "hidden";
+  jsonModalBody.textContent = "Chargement...";
+  if (jsonModalTitle) jsonModalTitle.textContent = label;
+
+  try {
+    const response = await fetch(path, { cache: "no-cache" });
+    if (!response.ok) {
+      throw new Error(`Fichier introuvable ou illisible (code ${response.status}).`);
+    }
+
+    const rawText = await response.text();
+    jsonModalBody.textContent = formaterJsonLisible(rawText);
+  } catch (err) {
+    console.error(`Lecture impossible pour ${label}`, err);
+    jsonModalBody.textContent = `Impossible de lire ${label}.\n${err.message}`;
+  }
+}
+
+function fermerJsonModal() {
+  if (!jsonModal) return;
+  jsonModal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function formaterJsonLisible(text = "") {
+  const trimmed = text.trim();
+  if (!trimmed) return "(fichier vide)";
+  try {
+    const parsed = JSON.parse(trimmed);
+    return JSON.stringify(parsed, null, 2);
+  } catch (err) {
+    return text;
+  }
 }
 
 async function chargerSyntheseAutomatique() {
