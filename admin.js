@@ -1,44 +1,38 @@
 /************************************************************
  *  Initialisation bouton "Choisir le dossier racine"
  ************************************************************/
-window.addEventListener("DOMContentLoaded", () => {
-
-    const rootBtn = document.getElementById("pickRoot");
-    if (!rootBtn) {
-        console.error("⛔ Bouton #pickRoot introuvable dans la page admin.html");
-        return;
-    }
-
-    rootBtn.addEventListener("click", async () => {
-    try {
-        const rootHandle = await window.showDirectoryPicker();
-
-        document.getElementById("rootInfo").textContent =
-            "📁 Dossier racine : " + rootHandle.name;
-
-        const missions = await scanRootFolder(rootHandle);
-        window.allMissions = missions;
-
-        // --- NOUVEAU ---
-        renderFilterButtons();
-        renderFilterValues();
-        renderMissionsTable();
-        // ---------------
-
-    } catch (err) {
-        console.warn("Sélection annulée :", err);
-    }
-});
-
-});
-
-/********************************************************************
- *  ÉTAT GLOBAL
- ********************************************************************/
 let allMissions = [];
 let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
 
+window.addEventListener("DOMContentLoaded", () => {
+  const rootBtn = document.getElementById("pickRoot");
+  if (!rootBtn) {
+    console.error("⛔ Bouton #pickRoot introuvable dans la page admin.html");
+    return;
+  }
+
+  rootBtn.addEventListener("click", async () => {
+    try {
+      // Ouvre le sélecteur de dossier
+      const rootHandle = await window.showDirectoryPicker();
+
+      document.getElementById("rootInfo").textContent =
+        "📁 Dossier racine : " + rootHandle.name;
+
+      // Scan
+      const missions = await scanRootFolder(rootHandle);
+      allMissions = missions;    // ✅ IMPORTANT : on met à jour la variable globale, PAS window.allMissions
+
+      renderFilterButtons();
+      renderFilterValues();
+      renderMissionsTable();
+
+    } catch (err) {
+      console.warn("Sélection annulée ou erreur :", err);
+    }
+  });
+});
 
 
 /********************************************************************
@@ -156,23 +150,23 @@ function parsePhotoTable(xmlText) {
 function getField(mission, type) {
   const g = mission.general || {};
   switch (type) {
-    case "donneur":       return g.LiColonne_DOrdre_Nom || "";
-    case "proprietaire":  return g.LiColonne_Prop_Nom || "";
-    case "diagnostiqueur":return g.LiColonne_Gen_Nom_operateur || "";
-    case "ville":         return g.LiColonne_Immeuble_Commune || "";
-    case "rue":           return g.LiColonne_Immeuble_Adresse1 || "";
-    case "batiment":      return g.LiColonne_Immeuble_Loc_copro || g.LiColonne_Immeuble_Lot || "";
-    default:              return "";
+    case "donneur":        return g.LiColonne_DOrdre_Nom || "";
+    case "proprietaire":   return g.LiColonne_Prop_Nom || "";
+    case "diagnostiqueur": return g.LiColonne_Gen_Nom_operateur || "";
+    case "ville":          return g.LiColonne_Immeuble_Commune || "";
+    case "rue":            return g.LiColonne_Immeuble_Adresse1 || "";
+    case "batiment":       return g.LiColonne_Immeuble_Loc_copro || g.LiColonne_Immeuble_Lot || "";
+    default:               return "";
   }
 }
 
 const FILTER_TYPES = [
-  { key: "donneur",      label: "Donneur d'ordre" },
-  { key: "proprietaire", label: "Propriétaire" },
+  { key: "donneur",        label: "Donneur d'ordre" },
+  { key: "proprietaire",   label: "Propriétaire" },
   { key: "diagnostiqueur", label: "Diagnostiqueur" },
-  { key: "ville",        label: "Ville" },
-  { key: "rue",          label: "Rue" },
-  { key: "batiment",     label: "Bâtiment" }
+  { key: "ville",          label: "Ville" },
+  { key: "rue",            label: "Rue" },
+  { key: "batiment",       label: "Bâtiment" }
 ];
 
 /********************************************************************
@@ -188,16 +182,13 @@ function renderFilterButtons() {
   }
 
   FILTER_TYPES.forEach(ft => {
-    // compte le nombre de valeurs distinctes non vides
     const set = new Set();
     allMissions.forEach(m => {
       const v = getField(m, ft.key);
       if (v) set.add(v);
     });
     const distinctCount = set.size;
-
-    // si aucune valeur, on peut soit masquer, soit laisser avec (0)
-    if (distinctCount === 0) return; // 👉 on masque ce filtre
+    if (distinctCount === 0) return;
 
     const btn = document.createElement("button");
     btn.className = "filter-btn" + (currentFilterType === ft.key ? " active" : "");
@@ -207,7 +198,6 @@ function renderFilterButtons() {
     `;
     btn.addEventListener("click", () => {
       if (currentFilterType === ft.key) {
-        // si on reclique → on désactive le filtre
         currentFilterType = null;
         currentFilterValue = null;
       } else {
@@ -250,7 +240,6 @@ function renderFilterValues() {
 
   const entries = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr"));
 
-  // "Tous"
   const allItem = document.createElement("div");
   allItem.className = "filter-value-item" + (currentFilterValue === null ? " active" : "");
   allItem.innerHTML = `<span>🌐 Tous</span><span>${allMissions.length}</span>`;
@@ -279,7 +268,6 @@ function renderFilterValues() {
  ********************************************************************/
 function filteredMissions() {
   let data = allMissions.slice();
-
   if (currentFilterType && currentFilterValue !== null) {
     data = data.filter(m => getField(m, currentFilterType) === currentFilterValue);
   }
@@ -298,7 +286,6 @@ function detectDomains(mission) {
     const hasDPE = mission.domainConclusions.some(d =>
       (d.DPE_Conclusion || d.DPE_Etiquette || "").trim()
     );
-
     if (hasAmiante) result.push("Amiante");
     if (hasPlomb) result.push("Plomb");
     if (hasDPE) result.push("DPE");
@@ -448,7 +435,6 @@ function showMissionDetail(id) {
     }
   }
 
-  // Photos (miniatures)
   if (mission.photos && mission.photos.length) {
     html += `<div class="detail-section"><h3>Photographies</h3>`;
     mission.photos.forEach(p => {
