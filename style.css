@@ -442,13 +442,16 @@ button:disabled {
   border: 1px solid #e5e7eb;
   padding: 6px;
   overflow: hidden;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .photo-card__image img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 520px;
+  height: 100%;
   object-fit: contain;
 }
 
