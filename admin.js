@@ -968,10 +968,12 @@ window.openAmianteForMission = function (missionId) {
 
   const payload = {
     rows: mission.amianteRows,
-    meta: { id: mission.id, label: mission.label }
+    meta: { id: mission.id, label: mission.label, createdAt: Date.now() }
   };
 
-  sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
+  const serialized = JSON.stringify(payload);
+  sessionStorage.setItem("amianteAutoRows", serialized);
+  localStorage.setItem("amianteAutoRows", serialized);
   window.open("amiante.html", "_blank", "noopener");
 };
 

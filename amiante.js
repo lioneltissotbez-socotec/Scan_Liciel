@@ -50,18 +50,10 @@ if (generateBtn) {
 }
 
 function chargerSyntheseAutomatique() {
-  const raw = sessionStorage.getItem("amianteAutoRows");
-  if (!raw) {
-    if (autoXmlStatus) {
-      autoXmlStatus.textContent = "En attente des données XML transmises par le module administratif.";
-    }
-    return;
-  }
-
-  sessionStorage.removeItem("amianteAutoRows");
+  const payload = lirePayloadAutomatique();
+  if (!payload) return;
 
   try {
-    const payload = JSON.parse(raw);
     const rows = payload?.rows || [];
     if (!rows.length) {
       if (autoXmlStatus) autoXmlStatus.textContent = "Aucune donnée amiante reçue.";
@@ -80,6 +72,45 @@ function chargerSyntheseAutomatique() {
 }
 
 chargerSyntheseAutomatique();
+
+function lirePayloadAutomatique() {
+  const key = "amianteAutoRows";
+  const EXPIRATION_MS = 10 * 60 * 1000; // 10 minutes
+
+  const rawSession = sessionStorage.getItem(key);
+  const rawLocal = !rawSession ? localStorage.getItem(key) : null;
+
+  if (!rawSession && !rawLocal) {
+    if (autoXmlStatus) {
+      autoXmlStatus.textContent = "En attente des données XML transmises par le module administratif.";
+    }
+    return null;
+  }
+
+  const raw = rawSession || rawLocal;
+
+  try {
+    const payload = JSON.parse(raw);
+    const createdAt = payload?.meta?.createdAt ? Number(payload.meta.createdAt) : null;
+    const age = createdAt ? Date.now() - createdAt : 0;
+
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+
+    if (createdAt && age > EXPIRATION_MS) {
+      if (autoXmlStatus) autoXmlStatus.textContent = "Données automatiques expirées. Relancez depuis le module administratif.";
+      return null;
+    }
+
+    return payload;
+  } catch (err) {
+    console.error("Impossible de lire le relais automatique amiante", err);
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+    if (autoXmlStatus) autoXmlStatus.textContent = "Lecture automatique impossible. Relancez depuis le module administratif.";
+    return null;
+  }
+}
 
 function nettoyerNomPiece(nom) {
   if (!nom) return "Non précisé";
