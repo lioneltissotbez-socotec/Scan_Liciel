@@ -52,7 +52,10 @@ if (generateBtn) {
 function chargerSyntheseAutomatique() {
   const payload = lirePayloadAutomatique();
   if (!payload) return;
+  appliquerPayloadAutomatique(payload);
+}
 
+function appliquerPayloadAutomatique(payload) {
   try {
     const rows = payload?.rows || [];
     if (!rows.length) {
@@ -72,6 +75,17 @@ function chargerSyntheseAutomatique() {
 }
 
 chargerSyntheseAutomatique();
+
+window.addEventListener("storage", e => {
+  if (e.key !== "amianteAutoRows" || !e.newValue) return;
+
+  try {
+    const payload = JSON.parse(e.newValue);
+    appliquerPayloadAutomatique(payload);
+  } catch (err) {
+    console.error("Impossible de rafraîchir la synthèse amiante depuis le stockage", err);
+  }
+});
 
 function lirePayloadAutomatique() {
   const key = "amianteAutoRows";
