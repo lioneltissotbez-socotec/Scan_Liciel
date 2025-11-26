@@ -364,84 +364,55 @@ function showMissionDetail(id) {
 
   let html = `<div class="detail-section"><h3>Identité mission</h3>`;
   const g = mission.general || {};
-  const idFields = [
-    ["Dossier", g.LiColonne_Mission_Num_Dossier],
-    ["Donneur d'ordre", g.LiColonne_DOrdre_Nom],
-    ["Propriétaire", g.LiColonne_Prop_Nom],
-    ["Diagnostiqueur", g.LiColonne_Gen_Nom_operateur],
-    ["Date visite", g.LiColonne_Mission_Date_Visite],
-    ["Date rapport", g.LiColonne_Mission_Date_Rapport],
-    ["Nature du bien", g.LiColonne_Immeuble_Nature_bien],
-    ["Type de bien", g.LiColonne_Immeuble_Type_bien],
-    ["Type de dossier", g.LiColonne_Immeuble_Type_Dossier],
+  const blocks = [
+    buildFieldGroup("Donneur d'ordre", [
+      ["Type d'ordre", g.LiColonne_DOrdre_Type],
+      ["Entête", g.LiColonne_DOrdre_Entete],
+      ["Nom", g.LiColonne_DOrdre_Nom],
+      ["Adresse", g.LiColonne_DOrdre_Adresse1],
+      ["Département", g.LiColonne_DOrdre_Departement],
+      ["Commune", g.LiColonne_DOrdre_Commune]
+    ]),
+    buildFieldGroup("Propriétaire", [
+      ["Entête", g.LiColonne_Prop_Entete],
+      ["Nom", g.LiColonne_Prop_Nom],
+      ["Adresse", g.LiColonne_Prop_Adresse1],
+      ["Département", g.LiColonne_Prop_Departement],
+      ["Commune", g.LiColonne_Prop_Commune]
+    ]),
+    buildFieldGroup("Bien", [
+      ["Adresse de l'immeuble", g.LiColonne_Immeuble_Adresse1],
+      ["Complément", g.LiColonne_Immeuble_Description],
+      ["Code postal", g.LiColonne_Immeuble_Departement],
+      ["Commune", g.LiColonne_Immeuble_Commune],
+      ["Lot / référence", g.LiColonne_Immeuble_Lot],
+      ["Localisation copropriété", g.LiColonne_Immeuble_Loc_copro],
+      ["Cadastre", g.LiColonne_Immeuble_Cadastre],
+      ["Nature du bien", g.LiColonne_Immeuble_Nature_bien],
+      ["Type de bien", g.LiColonne_Immeuble_Type_bien],
+      ["Type de dossier", g.LiColonne_Immeuble_Type_Dossier],
+      ["Occupé / vide", g.LiColonne_Immeuble_Occupe_vide],
+      ["Accompagnateur", g.LiColonne_Immeuble_Accompagnateur]
+    ]),
+    buildFieldGroup("Diagnostiqueur", [
+      ["Nom complet", g.LiColonne_Gen_Nom_operateur],
+      ["Nom", g.LiColonne_Gen_Nom_operateur_UniquementNomFamille],
+      ["Prénom", g.LiColonne_Gen_Nom_operateur_UniquementPreNom],
+      ["Certification société", g.LiColonne_Gen_certif_societe]
+    ]),
+    buildFieldGroup("Missions concernées", [
+      ["N° dossier", g.LiColonne_Mission_Num_Dossier],
+      ["Missions programmées", g.LiColonne_Mission_Missions_programmees],
+      ["Durée de mission", g.LiColonne_Mission_Duree_mission],
+      ["Heure d'arrivée", g.LiColonne_Mission_Heure_Arrivee],
+      ["Date de visite", g.LiColonne_Mission_Date_Visite],
+      ["Date du rapport", g.LiColonne_Mission_Date_Rapport],
+      ["Mémo terrain", g.LiColonne_Texte_memo_terrain],
+      ["Notes libres", g.LiColonne_Notes_libres]
+    ])
   ];
-  idFields.forEach(([label, val]) => {
-    if (val && val.trim()) {
-      html += `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(val)}</p>`;
-    }
-  });
-  html += `</div>`;
 
-  const odmFields = [
-    ["Type d'ordre", g.LiColonne_DOrdre_Type],
-    ["Donneur d'ordre – entête", g.LiColonne_DOrdre_Entete],
-    ["Donneur d'ordre – nom", g.LiColonne_DOrdre_Nom],
-    ["Donneur d'ordre – adresse", g.LiColonne_DOrdre_Adresse1],
-    ["Donneur d'ordre – département", g.LiColonne_DOrdre_Departement],
-    ["Donneur d'ordre – commune", g.LiColonne_DOrdre_Commune],
-    ["Propriétaire – entête", g.LiColonne_Prop_Entete],
-    ["Propriétaire – nom", g.LiColonne_Prop_Nom],
-    ["Propriétaire – adresse", g.LiColonne_Prop_Adresse1],
-    ["Propriétaire – département", g.LiColonne_Prop_Departement],
-    ["Propriétaire – commune", g.LiColonne_Prop_Commune],
-    ["Adresse immeuble", g.LiColonne_Immeuble_Adresse1],
-    ["Département immeuble", g.LiColonne_Immeuble_Departement],
-    ["Commune immeuble", g.LiColonne_Immeuble_Commune],
-    ["Accompagnateur", g.LiColonne_Immeuble_Accompagnateur],
-    ["Lot", g.LiColonne_Immeuble_Lot],
-    ["Cadastre", g.LiColonne_Immeuble_Cadastre],
-    ["Localisation copropriété", g.LiColonne_Immeuble_Loc_copro],
-    ["Nature du bien", g.LiColonne_Immeuble_Nature_bien],
-    ["Type de bien", g.LiColonne_Immeuble_Type_bien],
-    ["Type de dossier", g.LiColonne_Immeuble_Type_Dossier],
-    ["Occupé / vide", g.LiColonne_Immeuble_Occupe_vide],
-    ["Description", g.LiColonne_Immeuble_Description],
-    ["N° dossier", g.LiColonne_Mission_Num_Dossier],
-    ["Durée de mission", g.LiColonne_Mission_Duree_mission],
-    ["Date de visite", g.LiColonne_Mission_Date_Visite],
-    ["Date du rapport", g.LiColonne_Mission_Date_Rapport],
-    ["Missions programmées", g.LiColonne_Mission_Missions_programmees],
-    ["Heure d'arrivée", g.LiColonne_Mission_Heure_Arrivee],
-    ["Opérateur", g.LiColonne_Gen_Nom_operateur],
-    ["Opérateur – nom", g.LiColonne_Gen_Nom_operateur_UniquementNomFamille],
-    ["Opérateur – prénom", g.LiColonne_Gen_Nom_operateur_UniquementPreNom],
-    ["Certification société", g.LiColonne_Gen_certif_societe],
-    ["Mémo terrain", g.LiColonne_Texte_memo_terrain],
-    ["Notes libres", g.LiColonne_Notes_libres],
-  ];
-  const filledOdmFields = odmFields.filter(([, val]) => val && val.trim());
-  if (filledOdmFields.length) {
-    html += `<div class="detail-section"><h3>Ordre de mission (ODM)</h3>`;
-    filledOdmFields.forEach(([label, val]) => {
-      html += `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(val)}</p>`;
-    });
-    html += `</div>`;
-  }
-
-  html += `<div class="detail-section"><h3>Adresse</h3>`;
-  const addrFields = [
-    ["Adresse", g.LiColonne_Immeuble_Adresse1],
-    ["Complément", g.LiColonne_Immeuble_Description],
-    ["Code postal", g.LiColonne_Immeuble_Departement],
-    ["Commune", g.LiColonne_Immeuble_Commune],
-    ["Lot / Référence interne", g.LiColonne_Immeuble_Lot],
-    ["Localisation copro", g.LiColonne_Immeuble_Loc_copro],
-  ];
-  addrFields.forEach(([label, val]) => {
-    if (val && val.trim()) {
-      html += `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(val)}</p>`;
-    }
-  });
+  blocks.forEach(block => { html += block; });
   html += `</div>`;
 
   if (mission.conclusions && mission.conclusions.length) {
@@ -514,6 +485,17 @@ function showMissionDetail(id) {
 
   pane.classList.remove("muted");
   pane.innerHTML = html;
+}
+
+function buildFieldGroup(title, pairs) {
+  const filledPairs = pairs.filter(([, value]) => value && value.trim());
+  if (!filledPairs.length) return "";
+
+  const content = filledPairs.map(([label, value]) =>
+    `<p><b>${escapeHtml(label)} :</b> ${escapeHtml(value)}</p>`
+  ).join("");
+
+  return `<div class="detail-section"><h3>${escapeHtml(title)}</h3>${content}</div>`;
 }
 
 /********************************************************************
