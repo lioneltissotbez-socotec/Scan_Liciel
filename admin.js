@@ -396,10 +396,11 @@ function convertirSyntheseEnRows(synthese, generalInfo = {}) {
     const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
     const nomEI = mat.localisation || adresse || "Adresse non précisée";
     const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
+    const numUgFinal = numUG || "UG";
 
     return {
       Nom_EI: nomEI,
-      Num_UG: mat.zspo || `${numUG}-${idx + 1}`,
+      Num_UG: numUgFinal,
       Commune: commune,
       date_realisation: date,
       operateur,
