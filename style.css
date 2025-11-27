@@ -904,6 +904,76 @@ li { margin: 8px 0; border-left: 3px solid #ddd; padding-left: 10px; }
   white-space: pre-wrap;
 }
 
+/* ========== TABLE VIEWER (AMIANTE) ========== */
+.table-viewer {
+  margin-top: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.table-viewer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.table-viewer__title {
+  margin: 4px 0;
+}
+
+.table-viewer__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-viewer__controls select {
+  min-width: 240px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+}
+
+.table-preview {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 10px;
+  max-height: 380px;
+  overflow: auto;
+}
+
+.table-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table-preview th,
+.table-preview td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.table-preview th {
+  background: #e5edff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-preview tbody tr:nth-child(even) {
+  background: #f9fbff;
+}
+
 .icon-btn {
   border: none;
   background: transparent;

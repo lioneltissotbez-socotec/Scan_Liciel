@@ -58,6 +58,22 @@
           </div>
           <p class="upload-hint">Les contenus sont ouverts dans une fenêtre modale pour faciliter la lecture ou le copier-coller.</p>
         </div>
+
+        <div id="tableViewer" class="table-viewer" style="display:none;">
+          <div class="table-viewer__header">
+            <div>
+              <p class="pill-label">Aperçu graphique</p>
+              <h3 class="table-viewer__title">Visualiser les tables amiante</h3>
+              <p class="muted">Sélectionnez une table XML pour afficher ses lignes sous forme de tableau lisible.</p>
+            </div>
+            <div class="table-viewer__controls">
+              <label for="tableSelector" class="muted">Table</label>
+              <select id="tableSelector"></select>
+              <button id="tableShowBtn" class="secondary-btn" type="button">Afficher</button>
+            </div>
+          </div>
+          <div id="tablePreview" class="table-preview muted">Aucune table détectée pour le moment.</div>
+        </div>
       </div>
     </section>
   </main>
