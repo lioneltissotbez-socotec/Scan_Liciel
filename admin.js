@@ -139,11 +139,14 @@ async function parseMissionDirectory(dirHandle, folderName) {
 
   if (!general) return null; // pas une mission LICIEL valide
 
+  let amianteSynthese = null;
+  let amianteRows = [];
   if (amianteFiles.length) {
     amianteTables = buildAmianteTablesFromXml(amianteFiles);
+    const { rows, synthese } = buildAmianteRowsFromXml(amianteFiles, general);
+    amianteRows = rows;
+    amianteSynthese = synthese;
   }
-
-  const amianteRows = amianteFiles.length ? buildAmianteRowsFromXml(amianteFiles, general) : [];
 
   return {
     id: folderName,
@@ -155,7 +158,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
     domains: Array.from(domainFlags),
     media,
     amianteRows,
-    amianteTables
+    amianteTables,
+    amianteSynthese
   };
 }
 
@@ -293,7 +297,8 @@ function buildAmianteRowsFromXml(files, generalInfo = {}) {
   });
 
   const synthese = construireSyntheseDepuisXml(parsed);
-  return convertirSyntheseEnRows(synthese, generalInfo);
+  const rows = convertirSyntheseEnRows(synthese, generalInfo);
+  return { rows, synthese };
 }
 
 function parseGenericXmlRows(xmlText) {
@@ -1003,7 +1008,8 @@ window.openAmianteForMission = function (missionId) {
   const payload = {
     rows: mission.amianteRows,
     meta: { id: mission.id, label: mission.label, createdAt: Date.now() },
-    tables: mission.amianteTables || null
+    tables: mission.amianteTables || null,
+    synthese: mission.amianteSynthese || null
   };
 
   const serialized = JSON.stringify(payload);

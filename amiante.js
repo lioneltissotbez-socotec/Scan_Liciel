@@ -6,6 +6,7 @@
 let groupedData = {};
 let jsonPayloads = {};
 let tablePreviewData = {};
+let diagnosticInfo = null;
 
 const Z_AMIANTE_CHAMPS = [
   "LiColonne_Localisation",
@@ -296,6 +297,7 @@ async function chargerSyntheseAutomatique() {
 function appliquerPayloadAutomatique(payload) {
   try {
     const rows = payload?.rows || [];
+    const synthese = payload?.synthese || (payload?.tables ? construireSyntheseDepuisXml(payload.tables) : null);
     setJsonPayloads(payload?.tables || {});
 
     if (!rows.length) {
@@ -303,7 +305,7 @@ function appliquerPayloadAutomatique(payload) {
       return;
     }
 
-    processDataAndSetupNavigation(rows);
+    processDataAndSetupNavigation(rows, synthese);
     if (autoXmlStatus) {
       const label = payload?.meta?.label || payload?.meta?.id || "mission";
       autoXmlStatus.textContent = `Synthèse amiante chargée automatiquement pour ${label}.`;
@@ -413,12 +415,13 @@ async function chargerSyntheseDepuisXmlLocal() {
     }
 
     setJsonPayloads(parsed);
-    processDataAndSetupNavigation(rows);
+    processDataAndSetupNavigation(rows, synthese);
     if (autoXmlStatus) autoXmlStatus.textContent = "Synthèse amiante générée depuis les XML présents localement.";
 
     const payload = {
       rows,
       tables: parsed,
+      synthese,
       meta: { id: generalInfo.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" }
     };
     sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
@@ -466,8 +469,9 @@ function determinerEtatGlobal(rows) {
   return { texte, counts };
 }
 
-function processDataAndSetupNavigation(data) {
+function processDataAndSetupNavigation(data, meta = null) {
   groupedData = {};
+  diagnosticInfo = meta;
 
   data.forEach(row => {
     const ville = row.Commune || "Ville non précisée";
@@ -610,6 +614,9 @@ function generateHTML(data) {
     </div>
   `;
 
+  const diagnosticSection = buildDiagnosticSection(diagnosticInfo);
+  if (diagnosticSection) logementDiv.appendChild(diagnosticSection);
+
   const tabs = document.createElement("div");
   tabs.className = "tabs-local";
   const btnPiece = document.createElement("button");
@@ -713,7 +720,107 @@ function generateHTML(data) {
   container.appendChild(logementDiv);
 }
 
+function buildDiagnosticSection(info) {
+  if (!info || typeof info !== "object") return null;
+
+  const general = info.general || info.sourceGeneral || null;
+  const documents = info.documents || [];
+  const ecarts = info.ecarts_norme || info.ecarts || [];
+
+  const hasLabo = general && (general.labo?.nom || general.labo?.adresse || general.labo?.ville || general.description_travaux);
+  const hasDocuments = Array.isArray(documents) && documents.length;
+  const hasEcarts = Array.isArray(ecarts) && ecarts.length;
+  if (!hasLabo && !hasDocuments && !hasEcarts) return null;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "diagnostic-section";
+
+  const infoGrid = document.createElement("div");
+  infoGrid.className = "info-grid";
+
+  if (hasLabo) {
+    const laboCard = document.createElement("div");
+    laboCard.className = "info-card";
+    laboCard.innerHTML = `
+      <div class="info-card__header">Laboratoire</div>
+      ${general.labo?.nom ? `<p><span class="pill-label">Nom</span><span class="pill-value">${escapeHtml(general.labo.nom)}</span></p>` : ""}
+      ${general.labo?.cofrac ? `<p><span class="pill-label">COFRAC</span><span class="pill-value">${escapeHtml(general.labo.cofrac)}</span></p>` : ""}
+      ${general.labo?.adresse ? `<p><span class="pill-label">Adresse</span><span class="pill-value">${escapeHtml(general.labo.adresse)}</span></p>` : ""}
+      ${general.labo?.ville ? `<p><span class="pill-label">Ville</span><span class="pill-value">${escapeHtml(general.labo.ville)}</span></p>` : ""}
+    `;
+    infoGrid.appendChild(laboCard);
+
+    if (general.description_travaux) {
+      const travauxCard = document.createElement("div");
+      travauxCard.className = "info-card";
+      travauxCard.innerHTML = `
+        <div class="info-card__header">Travaux prévus</div>
+        <p class="muted">${escapeHtml(general.description_travaux)}</p>
+      `;
+      infoGrid.appendChild(travauxCard);
+    }
+  }
+
+  if (info.general?.nb_prelevements) {
+    const prelevCard = document.createElement("div");
+    prelevCard.className = "info-card";
+    prelevCard.innerHTML = `
+      <div class="info-card__header">Prélèvements</div>
+      <p><span class="pill-label">Nombre</span><span class="pill-value">${escapeHtml(`${info.general.nb_prelevements}`)}</span></p>
+      ${info.general.prefix_P ? `<p class="muted">Préfixe utilisé : ${escapeHtml(info.general.prefix_P)}</p>` : ""}
+    `;
+    infoGrid.appendChild(prelevCard);
+  }
+
+  if (info.general?.prefix_ZPSO) {
+    const zspoCard = document.createElement("div");
+    zspoCard.className = "info-card";
+    zspoCard.innerHTML = `
+      <div class="info-card__header">ZPSO</div>
+      <p><span class="pill-label">Préfixe</span><span class="pill-value">${escapeHtml(info.general.prefix_ZPSO)}</span></p>
+    `;
+    infoGrid.appendChild(zspoCard);
+  }
+
+  if (infoGrid.children.length) wrapper.appendChild(infoGrid);
+
+  if (hasDocuments) {
+    const docSection = document.createElement("div");
+    docSection.innerHTML = `<h3>Documents amiante</h3>`;
+    const list = document.createElement("ul");
+    list.className = "diagnostic-list";
+    documents.forEach(doc => {
+      const li = document.createElement("li");
+      li.innerHTML = `${escapeHtml(doc.type || "Document")}${doc.remis ? ` — <span class="pill-label">Statut</span><span class="pill-value">${escapeHtml(doc.remis)}</span>` : ""}`;
+      list.appendChild(li);
+    });
+    docSection.appendChild(list);
+    wrapper.appendChild(docSection);
+  }
+
+  if (hasEcarts) {
+    const ecartSection = document.createElement("div");
+    ecartSection.innerHTML = `<h3>Écarts normatifs</h3>`;
+    const list = document.createElement("ul");
+    list.className = "diagnostic-list";
+    ecarts.forEach(ecart => {
+      const badges = [];
+      if (ecart.oui) badges.push(`<span class="pill-label">Oui</span>`);
+      if (ecart.non) badges.push(`<span class="pill-label">Non</span>`);
+      if (ecart.so) badges.push(`<span class="pill-label">S.O.</span>`);
+      const li = document.createElement("li");
+      li.innerHTML = `${escapeHtml(ecart.observation || "Écart")}${badges.length ? ` — ${badges.join(" ")}` : ""}`;
+      list.appendChild(li);
+    });
+    ecartSection.appendChild(list);
+    wrapper.appendChild(ecartSection);
+  }
+
+  return wrapper;
+}
+
 async function lireFichiersXml(files) {
+
   const parser = new DOMParser();
   const contents = await Promise.all(files.map(file => new Promise((resolve, reject) => {
     const reader = new FileReader();
