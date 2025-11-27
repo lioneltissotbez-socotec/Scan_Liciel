@@ -402,6 +402,24 @@ button:disabled {
   margin-bottom: 6px;
 }
 
+.diagnostic-section {
+  margin-top: 12px;
+}
+
+.diagnostic-section h3 {
+  margin: 12px 0 6px;
+}
+
+.diagnostic-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #111827;
+}
+
+.diagnostic-list li {
+  margin-bottom: 6px;
+}
+
 .pill-label {
   display: inline-block;
   font-size: 12px;
