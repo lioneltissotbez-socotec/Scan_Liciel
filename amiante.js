@@ -1,6 +1,6 @@
 /**
  * Module Synthèse Amiante
- * Lecture d'un export Excel LICIEL et affichage interactif par ville, adresse et logement.
+ * Lecture d'un export JSON et affichage interactif par ville, adresse et logement.
  */
 
 let groupedData = {};
@@ -95,17 +95,35 @@ if (dropZone) {
 if (generateBtn) {
   generateBtn.addEventListener("click", () => {
     if (!fileInput.files.length) {
-      alert("Merci de sélectionner un fichier Excel .xlsx.");
+      alert("Merci de sélectionner un fichier JSON généré par Scan LICIEL.");
       return;
     }
+
+    const file = fileInput.files[0];
+    if (!/\.json$/i.test(file.name)) {
+      alert("Seuls les fichiers .json sont acceptés.");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = e => {
-      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-      processDataAndSetupNavigation(data);
+      try {
+        const rawText = e.target.result;
+        const parsed = JSON.parse(rawText);
+        const payload = normaliserPayloadJson(parsed);
+        if (!payload || !payload.rows || !payload.rows.length) {
+          alert("Le fichier JSON ne contient aucune ligne exploitable.");
+          return;
+        }
+
+        appliquerPayloadAutomatique(payload);
+        alert("Synthèse chargée depuis le fichier JSON.");
+      } catch (err) {
+        console.error("Import JSON impossible", err);
+        alert("Impossible de lire ce JSON. Vérifiez qu'il provient de Scan LICIEL.");
+      }
     };
-    reader.readAsArrayBuffer(fileInput.files[0]);
+    reader.readAsText(file, "utf-8");
   });
 }
 
@@ -292,6 +310,25 @@ async function chargerSyntheseAutomatique() {
   }
 
   await chargerSyntheseDepuisXmlLocal();
+}
+
+function normaliserPayloadJson(data) {
+  if (!data) return null;
+
+  if (Array.isArray(data)) {
+    return { rows: data, tables: null, meta: { createdAt: Date.now(), source: "json-file" } };
+  }
+
+  if (data.rows && Array.isArray(data.rows)) {
+    return {
+      rows: data.rows,
+      tables: data.tables || null,
+      synthese: data.synthese || null,
+      meta: data.meta || { createdAt: Date.now(), source: "json-file" }
+    };
+  }
+
+  return null;
 }
 
 function appliquerPayloadAutomatique(payload) {
