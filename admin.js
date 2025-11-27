@@ -81,6 +81,7 @@ async function parseMissionDirectory(dirHandle, folderName) {
   let domainConclusions = [];
   const domainFlags = new Set();
   const amianteFiles = [];
+  let amianteTables = null;
   let photosDir = null;
   let imagesDir = null;
 
@@ -120,7 +121,7 @@ async function parseMissionDirectory(dirHandle, folderName) {
       domainFlags.add(DOMAIN_FILES[lower]);
     }
 
-    if (lower.startsWith("table_z_amiante")) {
+    if (lower.startsWith("table_z_amiante") || lower === "table_general_amiante_analyses.xml") {
       amianteFiles.push({ name: fileName, content: await readFileCorrectly(fileHandle) });
     }
   });
@@ -138,6 +139,10 @@ async function parseMissionDirectory(dirHandle, folderName) {
 
   if (!general) return null; // pas une mission LICIEL valide
 
+  if (amianteFiles.length) {
+    amianteTables = buildAmianteTablesFromXml(amianteFiles);
+  }
+
   const amianteRows = amianteFiles.length ? buildAmianteRowsFromXml(amianteFiles, general) : [];
 
   return {
@@ -149,7 +154,8 @@ async function parseMissionDirectory(dirHandle, folderName) {
     domainConclusions,
     domains: Array.from(domainFlags),
     media,
-    amianteRows
+    amianteRows,
+    amianteTables
   };
 }
 
@@ -253,6 +259,24 @@ function parseMultiRowTable(xmlText) {
 
 function parsePhotoTable(xmlText) {
   return parseMultiRowTable(xmlText);
+}
+
+function buildAmianteTablesFromXml(files) {
+  const map = {};
+
+  files.forEach(({ name, content }) => {
+    const lower = name.toLowerCase();
+    const rows = parseGenericXmlRows(content);
+
+    if (lower.includes("table_z_amiante_prelevements")) map["Table_Z_Amiante_prelevements.json"] = rows;
+    else if (lower.includes("table_z_amiante_doc_remis")) map["Table_Z_Amiante_doc_remis.json"] = rows;
+    else if (lower.includes("table_z_amiante_ecart_norme")) map["Table_Z_Amiante_Ecart_Norme.json"] = rows;
+    else if (lower.includes("table_z_amiante_general")) map["Table_Z_Amiante_General.json"] = rows;
+    else if (lower.includes("table_general_amiante_analyses")) map["Table_General_Amiante_Analyses.json"] = rows;
+    else if (lower.includes("table_z_amiante")) map["Table_Z_Amiante.json"] = rows;
+  });
+
+  return map;
 }
 
 function buildAmianteRowsFromXml(files, generalInfo = {}) {
@@ -978,7 +1002,8 @@ window.openAmianteForMission = function (missionId) {
 
   const payload = {
     rows: mission.amianteRows,
-    meta: { id: mission.id, label: mission.label, createdAt: Date.now() }
+    meta: { id: mission.id, label: mission.label, createdAt: Date.now() },
+    tables: mission.amianteTables || null
   };
 
   const serialized = JSON.stringify(payload);
