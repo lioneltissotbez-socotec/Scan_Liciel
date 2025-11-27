@@ -5,6 +5,7 @@
 
 let groupedData = {};
 let jsonPayloads = {};
+let tablePreviewData = {};
 
 const Z_AMIANTE_CHAMPS = [
   "LiColonne_Localisation",
@@ -34,6 +35,10 @@ const jsonModalBody = document.getElementById("jsonModalBody");
 const jsonModalTitle = document.getElementById("jsonModalTitle");
 const closeJsonModal = document.getElementById("closeJsonModal");
 const jsonDebugButtons = document.querySelectorAll("[data-json-path]");
+const tableViewer = document.getElementById("tableViewer");
+const tableSelector = document.getElementById("tableSelector");
+const tableShowBtn = document.getElementById("tableShowBtn");
+const tablePreview = document.getElementById("tablePreview");
 
 jsonDebugButtons.forEach(btn => {
   btn.addEventListener("click", () => {
@@ -44,6 +49,15 @@ jsonDebugButtons.forEach(btn => {
 });
 
 toggleJsonButtons(false);
+renderTableViewer({});
+
+if (tableShowBtn) {
+  tableShowBtn.addEventListener("click", afficherTableSelectionnee);
+}
+
+if (tableSelector) {
+  tableSelector.addEventListener("change", afficherTableSelectionnee);
+}
 
 if (closeJsonModal) closeJsonModal.addEventListener("click", fermerJsonModal);
 if (jsonModal?.querySelector) {
@@ -145,6 +159,7 @@ function formaterJsonLisible(text = "") {
 
 function setJsonPayloads(tables = {}) {
   jsonPayloads = {};
+  tablePreviewData = tables || {};
 
   Object.entries(tables).forEach(([key, data]) => {
     jsonPayloads[key] = JSON.stringify({
@@ -154,6 +169,7 @@ function setJsonPayloads(tables = {}) {
   });
 
   toggleJsonButtons(Object.keys(jsonPayloads).length > 0);
+  renderTableViewer(tablePreviewData);
 }
 
 function toggleJsonButtons(enabled) {
@@ -164,6 +180,63 @@ function toggleJsonButtons(enabled) {
       btn.setAttribute("disabled", "disabled");
     }
   });
+}
+
+function renderTableViewer(tables = {}) {
+  if (!tableViewer || !tableSelector || !tablePreview) return;
+
+  const entries = Object.entries(tables).filter(([, rows]) => Array.isArray(rows));
+  if (!entries.length) {
+    tableViewer.style.display = "none";
+    tableSelector.innerHTML = "";
+    tablePreview.textContent = "Aucune table détectée pour le moment.";
+    tablePreview.classList.add("muted");
+    return;
+  }
+
+  tableViewer.style.display = "block";
+  tableSelector.innerHTML = "";
+
+  entries.forEach(([name, rows], index) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = `${name} (${rows.length})`;
+    if (index === 0) option.selected = true;
+    tableSelector.appendChild(option);
+  });
+
+  afficherTableSelectionnee();
+}
+
+function afficherTableSelectionnee() {
+  if (!tableSelector || !tablePreview) return;
+  const selected = tableSelector.value;
+  const rows = tablePreviewData?.[selected] || [];
+  tablePreview.innerHTML = construireTableHtml(rows, selected);
+  tablePreview.classList.remove("muted");
+}
+
+function construireTableHtml(rows = [], label = "") {
+  if (!rows.length) {
+    return `<p class="muted">${escapeHtml(label || "Table")} ne contient aucune ligne exploitable.</p>`;
+  }
+
+  const columns = Array.from(rows.reduce((set, row) => {
+    Object.keys(row || {}).forEach(key => set.add(key));
+    return set;
+  }, new Set()));
+
+  if (!columns.length) {
+    return `<p class="muted">${escapeHtml(label || "Table")} ne contient aucune colonne exploitable.</p>`;
+  }
+
+  const head = columns.map(col => `<th>${escapeHtml(col)}</th>`).join("");
+  const body = rows.map(row => {
+    const cells = columns.map(col => `<td>${escapeHtml(row?.[col] ?? "")}</td>`).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
 }
 
 function lireChampZAmiante(item, key) {
@@ -732,6 +805,16 @@ function extraireLignesDepuisTexte(rawText = "", fichierName = "") {
 
 function nettoyerTexteXml(valeur = "") {
   return `${valeur}`.replace(/\s+/g, " ").trim();
+}
+
+function escapeHtml(str) {
+  return (str || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c] || c));
 }
 
 function transformerElementEnObjet(element, prefix = "") {
