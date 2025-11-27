@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Scan Balises LICIEL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body { font-family: Arial, sans-serif; background: #f3f6fa; margin: 0; padding: 20px; }
+    h1 { margin-bottom: 20px; color: #1a4e8a; }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    button {
+        padding: 10px 18px;
+        background: #1a4e8a;
+        color: white;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 8px;
+    }
+
+    button:hover { background: #163f74; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; vertical-align: top; }
+    th { background: #e9eef5; }
+
+    input.alias { width: 150px; padding: 4px; }
+
+    .showTable, .showXmlList, .showColonneGroup, .showMixed {
+        padding: 4px 8px; font-size: 12px; background: #f39c12;
+        border-radius: 4px; border: none; cursor: pointer; color: #fff;
+        margin: 0;
+    }
+    .showTable:hover, .showXmlList:hover, .showColonneGroup:hover, .showMixed:hover {
+        background: #d68910;
+    }
+
+    /* MODALE */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+        display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+
+    .modal {
+        position: relative; background: #fff; border-radius: 10px;
+        max-width: 1000px; width: 92%; max-height: 90vh;
+        overflow: auto; padding: 20px 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal h3 { margin-top: 0; margin-bottom: 10px; color: #1a4e8a; font-size: 18px; }
+    .modal-close { position: absolute; top: 8px; right: 12px; font-size: 22px;
+        border: none; background: transparent; cursor: pointer; color: #666; }
+    .modal-close:hover { color: #000; }
+
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .mini-table th, .mini-table td { border: 1px solid #ccc; padding: 6px; vertical-align: top; }
+    .mini-table th { background: #f0f3f8; }
+
+    .mini-table-wrapper { max-height: 60vh; overflow: auto; margin-bottom: 25px; }
+
+    .category-buttons {
+        margin-bottom: 10px;
+    }
+    .category-buttons button {
+        background: #eee;
+        color: #333;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        font-size: 12px;
+        margin: 0 6px 6px 0;
+    }
+    .category-buttons button.active {
+        background: #1a4e8a;
+        color: #fff;
+        border-color: #1a4e8a;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🔍 Scan des Balises LICIEL</h1>
+
+<div class="card">
+    <p><b>1 — Choisir un dossier de mission LICIEL :</b></p>
+    <button id="pickFolder">Choisir un dossier</button>
+    <p id="folderName"></p>
+</div>
+
+<div class="card" id="results" style="display:none;">
+    <p><b>2 — Balises trouvées :</b></p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Utiliser</th>
+            <th>Alias</th>
+			<th>Catégorie</th>
+            <th>Balise</th>
+            <th>Valeur</th>
+            <th>Fichier</th>
+        </tr>
+        </thead>
+        <tbody id="balisesTable"></tbody>
+    </table>
+
+    <br>
+    <button id="previewSelection">Prévisualiser la sélection</button>
+    <button id="exportConfig">Exporter configuration</button>
+</div>
+
+<!-- MODALE -->
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+        <button class="modal-close">&times;</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+/*************************************************
+ * 🔵 LECTURE MULTI-ENCODAGE DES FICHIERS XML
+ *************************************************/
+async function readFileCorrectly(file) {
+    const buffer = await file.arrayBuffer();
+    try { return new TextDecoder("utf-8",{fatal:true}).decode(buffer); } catch(e){}
+    try { return new TextDecoder("iso-8859-1").decode(buffer); } catch(e){}
+    return new TextDecoder("windows-1252").decode(buffer);
+}
+
+// Stockage global
+let currentBalises = [];
+let detailedSelections = {};
+
+/*************************************************
+ * 🔵 CHOIX DU DOSSIER
+ *************************************************/
+document.getElementById("pickFolder").addEventListener("click", async () => {
+    const handle = await window.showDirectoryPicker();
+    document.getElementById("folderName").innerText = "📁 " + handle.name;
+
+    const balises = [];
+    await scanFolder(handle, balises);
+
+    currentBalises = balises;
+    detailedSelections = {}; // reset
+    renderTable(currentBalises);
+});
+
+/*************************************************
+ * 🔵 SCAN RECURSIF
+ *************************************************/
+async function scanFolder(dirHandle, balises, path = "") {
+    for await (const [name, handle] of dirHandle.entries()) {
+        const fullPath = path + "/" + name;
+
+        if (handle.kind === "directory") {
+            await scanFolder(handle, balises, fullPath);
+        } else if (handle.kind === "file" && name.toLowerCase().endsWith(".xml")) {
+            const file = await handle.getFile();
+            const text = await readFileCorrectly(file);
+            extractBalises(text, name, fullPath, balises);
+        }
+    }
+}
+
+/*************************************************
+ * 🔵 EXTRACTION DES BALISES
+ *************************************************/
+function extractBalises(xmlText, filename, fullPath, balises) {
+    const regex = /<([^\/][^ >]*)[^>]*>(.*?)<\/\1>/gs;
+    let match;
+
+    while ((match = regex.exec(xmlText)) !== null) {
+        const tag = match[1];
+        const value = match[2].trim();
+        if (!value) continue;
+
+        balises.push({
+            tag,
+            value,
+            filename,
+            fullPath,
+            alias: "",
+            detectedType:
+                isStructuredXmlList(value) ? "structured_list" :
+                isCompressedTable(value)   ? "compressed_table" :
+                isColonneGroup(value)      ? "colonne_group" :
+                isComplexMixedBlock(value) ? "mixed_block" :
+                                             "simple_field"
+        });
+    }
+}
+
+
+/*************************************************
+ * 🔵 DÉTECTIONS AUTOMATIQUES
+ *************************************************/
+function isCompressedTable(value) {
+    if (!value || value.length < 150) return false;
+    const timestamp = /\b20\d{2}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}/.test(value);
+    const ids = value.match(/\b\d{5}\b/g);
+    const hasIds = ids && ids.length >= 3;
+    return timestamp && hasIds;
+}
+
+function isStructuredXmlList(value) {
+    return /<LiItem_/i.test(value);
+}
+
+function isColonneGroup(value) {
+    return /<LiColonne_/i.test(value) && !isStructuredXmlList(value);
+}
+
+function isComplexMixedBlock(value) {
+    if (/<prelevement>/i.test(value) ||
+        /<prelevements>/i.test(value) ||
+        /<analyse>/i.test(value) ||
+        /<echantillon>/i.test(value)) {
+        return true;
+    }
+    const tags = value.match(/<[^\/][^>]*>/g);
+    if (tags && tags.length > 30) return true;
+    return false;
+}
+
+/*************************************************
+ * 🔵 PARSING
+ *************************************************/
+function splitCompressedValue(value){
+    return value.split(/(?=<\w)/g).filter(r=>r.trim().length);
+}
+
+function buildCompressedTableHtml(balise, baliseIndex) {
+    const rows = splitCompressedValue(balise.value);
+    let html = `<h3>${escapeHtml(balise.tag)} – ${escapeHtml(balise.filename)}</h3>`;
+    html += '<div class="mini-table-wrapper"><table class="mini-table">';
+    html += '<thead><tr><th>✔</th><th>#</th><th>Détail</th></tr></thead><tbody>';
+
+    rows.forEach((r,i)=>{
+        const key = String(i);
+        const isChecked = detailedSelections[baliseIndex]?.selected?.[key] || false;
+        html+=`<tr>
+            <td><input type="checkbox" class="child-select" data-balise="${baliseIndex}" data-type="row" data-key="${key}" ${isChecked?"checked":""}></td>
+            <td>${i+1}</td>
+            <td>${escapeHtml(r)}</td>
+        </tr>`;
+    });
+
+    html+='</tbody></table></div>';
+    return html;
+}
+
+function parseStructuredXmlList(value) {
+    const xml=new DOMParser().parseFromString("<root>"+value+"</root>","text/xml");
+    return [...xml.getElementsByTagName("*")]
+        .filter(n=>n.tagName.startsWith("LiItem_"))
+        .map(item=>{
+            const o={};
+            [...item.children].forEach(c=>o[c.tagName]=c.textContent.trim());
+            return o;
+        });
+}
+
+function buildStructuredXmlListTable(rows,title,baliseIndex){
+    const columns=[...new Set(rows.flatMap(r=>Object.keys(r)))];
+    let html=`<h3>${escapeHtml(title)}</h3>`;
+    html+='<div class="mini-table-wrapper"><table class="mini-table">';
+    html+='<thead><tr><th>✔</th>'+columns.map(c=>`<th>${escapeHtml(c)}</th>`).join("")+'</tr></thead><tbody>';
+    rows.forEach((r,rowIndex)=>{
+        const key = String(rowIndex);
+        const isChecked = detailedSelections[baliseIndex]?.selected?.[key] || false;
+        html+='<tr>';
+        html+=`<td><input type="checkbox" class="child-select" data-balise="${baliseIndex}" data-type="row" data-key="${key}" ${isChecked?"checked":""}></td>`;
+        columns.forEach(c=>{
+            html+=`<td>${escapeHtml(r[c]||"")}</td>`;
+        });
+        html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+    return html;
+}
+
+function parseColonneGroup(value) {
+    const xml=new DOMParser().parseFromString("<root>"+value+"</root>","text/xml");
+    return [...xml.getElementsByTagName("*")]
+        .filter(n=>n.tagName.startsWith("LiColonne_"))
+        .map(c=>({key:c.tagName,value:c.textContent.trim()}));
+}
+
+function buildColonneGroupTable(rows,title,baliseIndex){
+    let html=`<h3>${escapeHtml(title)}</h3>`;
+    html+='<div class="mini-table-wrapper"><table class="mini-table">';
+    html+='<thead><tr><th>✔</th><th>Champ</th><th>Valeur</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+        const key=r.key;
+        const isChecked=detailedSelections[baliseIndex]?.selected?.[key] || false;
+        html+=`<tr>
+            <td><input type="checkbox" class="child-select" data-balise="${baliseIndex}" data-type="field" data-key="${key}" ${isChecked?"checked":""}></td>
+            <td>${escapeHtml(r.key)}</td>
+            <td>${escapeHtml(r.value)}</td>
+        </tr>`;
+    });
+    html+='</tbody></table></div>';
+    return html;
+}
+
+function parseSimpleFieldsWithoutChildren(value){
+    const xml=new DOMParser().parseFromString("<root>"+value+"</root>","text/xml");
+    const root=xml.documentElement;
+    const fields=[];
+    [...root.children].forEach(node=>{
+        if(["prelevements","analyse","echantillon"].includes(node.tagName)) return;
+        if(node.children.length===0){
+            fields.push({key:node.tagName,value:(node.textContent||"").trim()});
+        }
+    });
+    return fields;
+}
+
+function parsePrelevements(value){
+    const xml=new DOMParser().parseFromString("<root>"+value+"</root>","text/xml");
+    return [...xml.getElementsByTagName("prelevement")]
+        .map(item=>{
+            const o={};
+            [...item.children].forEach(c=>o[c.tagName]=c.textContent.trim());
+            return o;
+        });
+}
+
+function buildSimpleFieldTable(fields,baliseIndex){
+    let html=`<h3>Informations générales</h3>`;
+    html+='<div class="mini-table-wrapper"><table class="mini-table">';
+    html+='<thead><tr><th>✔</th><th>Champ</th><th>Valeur</th></tr></thead><tbody>';
+    fields.forEach(f=>{
+        const key=f.key;
+        const isChecked=detailedSelections[baliseIndex]?.selected?.[key] || false;
+        html+=`<tr>
+            <td><input type="checkbox" class="child-select" data-balise="${baliseIndex}" data-type="field" data-key="${key}" ${isChecked?"checked":""}></td>
+            <td>${escapeHtml(f.key)}</td>
+            <td>${escapeHtml(f.value)}</td>
+        </tr>`;
+    });
+    html+='</tbody></table></div>';
+    return html;
+}
+
+function buildPrelevementsTable(prels,baliseIndex){
+    if(!prels.length) return "";
+    const cols=[...new Set(prels.flatMap(r=>Object.keys(r)))];
+    let html=`<h3>Prélevements</h3>`;
+    html+='<div class="mini-table-wrapper"><table class="mini-table">';
+    html+='<thead><tr><th>✔</th>'+cols.map(c=>`<th>${escapeHtml(c)}</th>`).join("")+'</tr></thead><tbody>';
+    prels.forEach((r,rowIndex)=>{
+        const key=String(rowIndex);
+        const isChecked=detailedSelections[baliseIndex]?.selected?.[key] || false;
+        html+='<tr>';
+        html+=`<td><input type="checkbox" class="child-select" data-balise="${baliseIndex}" data-type="row" data-key="${key}" ${isChecked?"checked":""}></td>`;
+        cols.forEach(c=>{
+            html+=`<td>${escapeHtml(r[c]||"")}</td>`;
+        });
+        html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+    return html;
+}
+
+/*************************************************
+ * 🔵 ESCAPE HTML
+ *************************************************/
+function escapeHtml(str){
+    return (str||"").replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+}
+
+/*************************************************
+ * 🔵 RENDER TABLE
+ *************************************************/
+function renderTable(balises){
+    const tbody=document.getElementById("balisesTable");
+    tbody.innerHTML="";
+    balises.forEach((b,i)=>{
+        let valueCell="";
+        if (isStructuredXmlList(b.value)) {
+            valueCell=`<button class="showXmlList" data-index="${i}">Voir le tableau</button>`;
+        }
+        else if (isComplexMixedBlock(b.value)) {
+            valueCell=`<button class="showMixed" data-index="${i}">Voir le détail complet</button>`;
+        }
+        else if (isCompressedTable(b.value)) {
+            valueCell=`<button class="showTable" data-index="${i}">Voir le détail</button>`;
+        }
+        else if (isColonneGroup(b.value)) {
+            valueCell=`<button class="showColonneGroup" data-index="${i}">Voir le formulaire</button>`;
+        }
+        else {
+            valueCell = escapeHtml(b.value);
+        }
+        const tr = document.createElement("tr");
+tr.innerHTML = `
+    <td><input type="checkbox" data-index="${i}" class="useFlag"></td>
+    <td><input type="text" class="alias" placeholder="Alias" data-index="${i}"></td>
+    <td>${escapeHtml(b.tag)}</td>
+    <td>${valueCell}</td>
+
+    <td>
+        <select class="categorySelect" data-index="${i}">
+            <option value="">—</option>
+            <option value="Administratif">Administratif</option>
+            <option value="Amiante">Amiante</option>
+            <option value="Plomb">Plomb</option>
+            <option value="Electricité">Electricité</option>
+            <option value="Gaz">Gaz</option>
+            <option value="Termites">Termites</option>
+            <option value="DPE">DPE</option>
+            <option value="Assainissement">Assainissement</option>
+            <option value="Synthese">Synthèse</option>
+            <option value="Autre">Autre</option>
+        </select>
+    </td>
+
+    <td>${escapeHtml(b.filename)}</td>
+`;
+tbody.appendChild(tr);
+
+    });
+    document.getElementById("results").style.display="block";
+}
+
+/*************************************************
+ * 🔵 MODALE
+ *************************************************/
+const modalOverlay=document.getElementById("modalOverlay");
+const modalContent=document.getElementById("modalContent");
+const modalCloseBtn=document.querySelector(".modal-close");
+
+function openModal(html){
+    modalContent.innerHTML=html;
+    modalOverlay.style.display="flex";
+}
+function closeModal(){
+    modalOverlay.style.display="none";
+    modalContent.innerHTML="";
+}
+modalCloseBtn.addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", e=>{ if(e.target===modalOverlay) closeModal(); });
+
+/*************************************************
+ * 🔵 CLICS BOUTONS DETAIL
+ *************************************************/
+document.addEventListener("click", e => {
+    if(e.target.classList.contains("showTable")){
+        const idx=e.target.dataset.index;
+        const b=currentBalises[idx];
+        openModal(buildCompressedTableHtml(b, idx));
+    }
+    if(e.target.classList.contains("showXmlList")){
+        const idx=e.target.dataset.index;
+        const b=currentBalises[idx];
+        const rows=parseStructuredXmlList(b.value);
+        openModal(buildStructuredXmlListTable(rows, b.tag+" – "+b.filename, idx));
+    }
+    if(e.target.classList.contains("showColonneGroup")){
+        const idx=e.target.dataset.index;
+        const b=currentBalises[idx];
+        const rows=parseColonneGroup(b.value);
+        openModal(buildColonneGroupTable(rows, b.tag+" – "+b.filename, idx));
+    }
+    if(e.target.classList.contains("showMixed")){
+        const idx=e.target.dataset.index;
+        const b=currentBalises[idx];
+        const fields=parseSimpleFieldsWithoutChildren(b.value);
+        const prels=parsePrelevements(b.value);
+        let html="";
+        if(fields.length) html+=buildSimpleFieldTable(fields, idx);
+        if(prels.length) html+=buildPrelevementsTable(prels, idx);
+        if(!html) html="<p>Aucune donnée détectée</p>";
+        openModal(html);
+    }
+});
+
+/*************************************************
+ * 🔵 GESTION DES CASES INTERNES
+ *************************************************/
+document.addEventListener("change", e => {
+    if(!e.target.classList.contains("child-select")) return;
+    const baliseIndex = e.target.dataset.balise;
+    const key = e.target.dataset.key;
+    const type = e.target.dataset.type;
+    const checked = e.target.checked;
+    if (!detailedSelections[baliseIndex]) {
+        detailedSelections[baliseIndex] = { type: type, selected: {} };
+    }
+    detailedSelections[baliseIndex].selected[key] = checked;
+});
+
+/*************************************************
+ * 🔵 CATÉGORISATION POUR PRÉVIEW
+ *************************************************/
+function inferCategory(tag, key, filename, value){
+    const txt = (tag+" "+(key||"")+" "+filename+" "+(value||"")).toLowerCase();
+    if (txt.includes("amiante") || txt.includes("zps")) return "Amiante";
+    if (txt.includes("crep") || txt.includes("plomb")) return "Plomb";
+    if (txt.includes("termite") || txt.includes("parasite")) return "Termites / Parasites";
+    if (txt.includes("dpe") || txt.includes("energie")) return "DPE / Énergie";
+    if (txt.includes("gaz")) return "Gaz";
+    if (txt.includes("electr")) return "Électricité";
+    if (txt.includes("radon")) return "Radon";
+    if (txt.includes("assainissement")) return "Assainissement";
+    return "Administratif / Général";
+}
+
+/*************************************************
+ * 🔵 PRÉVISUALISATION DE LA SÉLECTION
+ *************************************************/
+document.getElementById("previewSelection").addEventListener("click", () => {
+    const usedCheckboxes = document.querySelectorAll(".useFlag:checked");
+    if (!usedCheckboxes.length) {
+        openModal("<p>Aucune balise principale sélectionnée.</p>");
+        return;
+    }
+
+    const categories = {};
+
+    usedCheckboxes.forEach(cb => {
+        const idx = cb.dataset.index;
+        const b = currentBalises[idx];
+        const aliasInput = document.querySelector(`.alias[data-index="${idx}"]`);
+        const alias = aliasInput ? aliasInput.value.trim() : "";
+        const baseLabel = alias || b.tag;
+
+        const detailed = detailedSelections[idx]?.selected || null;
+        const hasDetailed = detailed && Object.values(detailed).some(v => v);
+
+        if (hasDetailed) {
+            for (const [key, isOn] of Object.entries(detailed)) {
+                if (!isOn) continue;
+                const cat = inferCategory(b.tag, key, b.filename, b.value);
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push({
+                    baliseIndex: idx,
+                    label: baseLabel,
+                    subKey: key,
+                    file: b.filename
+                });
+            }
+        } else {
+            const cat = inferCategory(b.tag, null, b.filename, b.value);
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push({
+                baliseIndex: idx,
+                label: baseLabel,
+                subKey: null,
+                file: b.filename
+            });
+        }
+    });
+
+    const catNames = Object.keys(categories);
+    if (!catNames.length) {
+        openModal("<p>Aucun champ interne sélectionné. Coche des lignes/champs dans les vues détaillées.</p>");
+        return;
+    }
+
+    let html = '<div class="category-buttons">';
+    catNames.forEach((cat, i) => {
+        html += `<button type="button" class="cat-btn${i===0?" active":""}" data-cat="${cat}">${cat}</button>`;
+    });
+    html += '</div>';
+
+    catNames.forEach((cat, i) => {
+        html += `<div class="cat-block" data-cat-block="${cat}" style="${i===0?"":"display:none;"}">`;
+        html += `<h3>${cat}</h3>`;
+        html += '<div class="mini-table-wrapper"><table class="mini-table">';
+        html += '<thead><tr><th>Balise / Alias</th><th>Détail</th><th>Fichier</th></tr></thead><tbody>';
+        categories[cat].forEach(item => {
+            const detail = item.subKey ? `Champ / Ligne : ${escapeHtml(String(item.subKey))}` : "<i>Bloc complet</i>";
+            html += `<tr>
+                <td>${escapeHtml(item.label)}</td>
+                <td>${detail}</td>
+                <td>${escapeHtml(item.file)}</td>
+            </tr>`;
+        });
+        html += '</tbody></table></div></div>';
+    });
+
+    openModal(html);
+
+    // Activer les boutons de catégorie
+    modalContent.querySelectorAll(".cat-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const cat = btn.dataset.cat;
+            modalContent.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active"));
+            btn.classList.add("active");
+            modalContent.querySelectorAll(".cat-block").forEach(block => {
+                block.style.display = (block.dataset.catBlock === cat) ? "block" : "none";
+            });
+        });
+    });
+});
+
+/*************************************************
+ * 🔵 EXPORT JSON (version corrigée)
+ *************************************************/
+document.getElementById("exportConfig").addEventListener("click", () => {
+
+    const exportData = [];
+
+    document.querySelectorAll(".useFlag").forEach(flag => {
+        if (flag.checked) {
+
+            const i = parseInt(flag.dataset.index, 10);
+            const b = currentBalises[i];
+
+            const alias = document.querySelector(`.alias[data-index="${i}"]`)?.value.trim() || "";
+            const category = document.querySelector(`.categorySelect[data-index="${i}"]`)?.value || "";
+
+            // 🔥 IMPORTANT : on utilise detailedSelections (correct)
+            const fields = detailedSelections[i]?.selected
+                ? Object.keys(detailedSelections[i].selected).filter(k => detailedSelections[i].selected[k])
+                : [];
+
+            exportData.push({
+                tag: b.tag,
+                alias: alias,
+                file: b.filename,
+                path: b.fullPath,
+                type: b.detectedType,
+                category: category,
+                fields: fields
+            });
+        }
+    });
+
+    if (!exportData.length) {
+        alert("Aucune balise sélectionnée.");
+        return;
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "balises_model.json";
+    a.click();
+});
+
+
+</script>
+
+</body>
+</html>
