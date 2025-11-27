@@ -20,6 +20,7 @@ const DOMAIN_FILES = {
 
 window.addEventListener("DOMContentLoaded", () => {
   const rootBtn = document.getElementById("pickRoot");
+  const openAmianteFilteredBtn = document.getElementById("openAmianteFiltered");
   if (!rootBtn) {
     console.error("⛔ Bouton #pickRoot introuvable dans la page admin.html");
     return;
@@ -47,6 +48,46 @@ window.addEventListener("DOMContentLoaded", () => {
       console.warn("Sélection annulée ou erreur :", err);
     }
   });
+
+  if (openAmianteFilteredBtn) {
+    openAmianteFilteredBtn.addEventListener("click", () => {
+      const list = filteredMissions();
+      const { rows, missing } = collectAmianteRows(list);
+
+      if (!rows.length) {
+        alert("Aucune donnée amiante disponible pour les missions filtrées.");
+        return;
+      }
+
+      if (missing.length) {
+        console.warn("Missions sans données amiante ignorées :", missing.join(", "));
+      }
+
+      const tables = mergeAmianteTables(list);
+      const labelParts = [];
+      if (currentFilterType) {
+        const filterLabel = (FILTER_TYPES.find(f => f.key === currentFilterType) || {}).label || currentFilterType;
+        labelParts.push(`${filterLabel} : ${currentFilterValue || "Tous"}`);
+      }
+      labelParts.push(`${list.length} mission(s)`);
+
+      const payload = {
+        rows,
+        tables: Object.keys(tables).length ? tables : null,
+        meta: {
+          id: "missions-filtrees",
+          label: labelParts.join(" · "),
+          createdAt: Date.now(),
+          source: "filtered-admin"
+        }
+      };
+
+      const serialized = JSON.stringify(payload);
+      sessionStorage.setItem("amianteAutoRows", serialized);
+      localStorage.setItem("amianteAutoRows", serialized);
+      window.open("amiante.html", "_blank", "noopener");
+    });
+  }
 });
 
 
@@ -650,6 +691,47 @@ function filteredMissions() {
   return data;
 }
 
+function collectAmianteRows(missions = []) {
+  const rows = [];
+  const missing = [];
+
+  missions.forEach(mission => {
+    if (mission.amianteRows && mission.amianteRows.length) {
+      rows.push(...mission.amianteRows);
+    } else {
+      missing.push(mission.label || mission.id || "mission");
+    }
+  });
+
+  return { rows, missing };
+}
+
+function mergeAmianteTables(missions = []) {
+  const merged = {};
+
+  missions.forEach(mission => {
+    const tables = mission.amianteTables || {};
+    Object.entries(tables).forEach(([key, rows]) => {
+      if (!Array.isArray(rows)) return;
+      if (!merged[key]) merged[key] = [];
+      merged[key].push(...rows);
+    });
+  });
+
+  return merged;
+}
+
+function updateAmianteFilteredButton(missions = []) {
+  const btn = document.getElementById("openAmianteFiltered");
+  if (!btn) return;
+
+  const { rows } = collectAmianteRows(missions);
+  btn.disabled = rows.length === 0;
+  btn.textContent = rows.length
+    ? `Synthèse amiante (${missions.length} mission(s))`
+    : "Synthèse amiante (missions filtrées)";
+}
+
 function detectDomains(mission) {
   if (mission.domains && mission.domains.length) {
     return Array.from(new Set(mission.domains));
@@ -689,6 +771,8 @@ function renderMissionsTable() {
   const list = filteredMissions();
 
   document.getElementById("missionsCount").textContent = list.length + " mission(s)";
+
+  updateAmianteFilteredButton(list);
 
   if (!list.length) {
     container.innerHTML = "<p class='muted'>Aucune mission ne correspond au filtre.</p>";
