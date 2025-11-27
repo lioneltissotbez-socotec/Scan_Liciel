@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Analyse missions LICIEL</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="missions.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="topbar-title">Scan LICIEL</div>
+      <div class="topbar-subtitle">Module d'analyse multi-missions</div>
+    </div>
+    <a class="topbar-link" href="index.html">⬅ Retour Dashboard</a>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card">
+        <h2>1. Dossier parent</h2>
+        <p class="muted">Sélectionnez le dossier qui contient les sous-dossiers de missions.</p>
+        <button id="pickParent" class="primary-btn">Choisir un dossier</button>
+        <p id="parentInfo" class="muted"></p>
+      </section>
+
+      <section class="card">
+        <h2>2. Filtres</h2>
+        <div id="filterButtons" class="filter-buttons"></div>
+      </section>
+
+      <section class="card" id="filterValuesBlock" style="display:none;">
+        <h3 id="filterValuesTitle">Valeurs</h3>
+        <div id="filterValues" class="filter-values"></div>
+      </section>
+
+      <section class="card">
+        <h2>Types de mission</h2>
+        <div id="typeFilters" class="chip-list"></div>
+      </section>
+    </aside>
+
+    <section class="main">
+      <section class="card">
+        <div class="card-header-row">
+          <div>
+            <h2>Missions détectées</h2>
+            <p id="status" class="muted">En attente d'un dossier…</p>
+          </div>
+          <div class="card-header-actions">
+            <span id="missionsCount" class="badge">0 mission</span>
+            <button id="exportJson" class="secondary-btn" disabled>Exporter vers synthèse</button>
+          </div>
+        </div>
+
+        <div id="missionTableWrapper" class="table-wrapper compact"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header-row">
+          <h2>Lignes amiante (format Extract)</h2>
+          <button id="copyJson" class="secondary-btn" disabled>Copier le JSON</button>
+        </div>
+        <div class="table-wrapper compact" id="amiantePreview"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="missions.js"></script>
+</body>
+</html>
