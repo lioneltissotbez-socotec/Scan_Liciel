@@ -1,0 +1,1435 @@
+{
+  "global": {
+    "presence_amiante": false,
+    "nb_zones_total": 13,
+    "nb_zones_presence": 0,
+    "nb_zones_absence": 12,
+    "nb_zones_suspect": 0,
+    "nb_prelevements_total": 21,
+    "nb_prelevements_presence": 0,
+    "nb_prelevements_absence": 20
+  },
+  "pieces": [
+    {
+      "piece": "1er tage - sjour",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-001",
+          "description": "Enduit +peinture sur murs torchis ( pices sche)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P001",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P002",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-003",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P005",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P006",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-010",
+          "description": "Joint d'tanchit entre menuiserie et structure sur porte d'entre",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour"
+          ],
+          "prelevements": [
+            {
+              "id": "P017",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peintures multiples ([Met] Peintures multiples)"
+            },
+            {
+              "id": "P018",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-011",
+          "description": "Joint de Parclose fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P019",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple gris ([Met] Matriau souple gris)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-012",
+          "description": "Joint d'tanchit entre menuiserie et structure sur fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P020",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple beige ([Met] Matriau souple beige)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-013",
+          "description": "Joint d'tanchit entre ouvrant et dormant fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P021",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "piece": "1er tage - dgagement",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-001",
+          "description": "Enduit +peinture sur murs torchis ( pices sche)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P001",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P002",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-003",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P005",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P006",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "piece": "1er tage - chambre 1",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-001",
+          "description": "Enduit +peinture sur murs torchis ( pices sche)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P001",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P002",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-003",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P005",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P006",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-011",
+          "description": "Joint de Parclose fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P019",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple gris ([Met] Matriau souple gris)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-012",
+          "description": "Joint d'tanchit entre menuiserie et structure sur fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P020",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple beige ([Met] Matriau souple beige)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-013",
+          "description": "Joint d'tanchit entre ouvrant et dormant fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P021",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "piece": "1er tage - cellier",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-001",
+          "description": "Enduit +peinture sur murs torchis ( pices sche)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P001",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P002",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-003",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier"
+          ],
+          "prelevements": [
+            {
+              "id": "P005",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P006",
+              "localisation": "1er tage - dgagement",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "piece": "1er tage - cuisine",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-002",
+          "description": "Enduit +peinture sur murs torchis ( pices humide)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P003",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P004",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-004",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P007",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P008",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-007",
+          "description": "Plaques souples bitumineuses antivibratiles sous vier",
+          "resultat": "Prsence d'amiante",
+          "localisations": [
+            "1er tage - cuisine"
+          ],
+          "prelevements": [
+            {
+              "id": "P013",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Prsence d'amiante",
+              "commentaire_labo": "[Met] Matriau bitumineux noir ([Met] Matriau bitumineux noir)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-008",
+          "description": "Joint silicone",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine"
+          ],
+          "prelevements": [
+            {
+              "id": "P014",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple blanc ([Met] Matriau souple blanc)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-009",
+          "description": "Colle de faence",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P015",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+            },
+            {
+              "id": "P016",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-011",
+          "description": "Joint de Parclose fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P019",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple gris ([Met] Matriau souple gris)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-012",
+          "description": "Joint d'tanchit entre menuiserie et structure sur fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P020",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple beige ([Met] Matriau souple beige)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-013",
+          "description": "Joint d'tanchit entre ouvrant et dormant fenetres pvc",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - chambre 1"
+          ],
+          "prelevements": [
+            {
+              "id": "P021",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "piece": "1er tage - salle de bain/wc",
+      "resultat_global": "Absence d'amiante",
+      "zpsos": [
+        {
+          "id": "ZPSO-002",
+          "description": "Enduit +peinture sur murs torchis ( pices humide)",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P003",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            },
+            {
+              "id": "P004",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-004",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P007",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P008",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-005",
+          "description": "Bandes calicot",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P009",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            },
+            {
+              "id": "P010",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-006",
+          "description": "Ragrage+colle",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - sjour",
+            "1er tage - cuisine",
+            "1er tage - dgagement",
+            "1er tage - chambre 1",
+            "1er tage - cellier",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P011",
+              "localisation": "1er tage - sjour",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+            },
+            {
+              "id": "P012",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+            }
+          ]
+        },
+        {
+          "id": "ZPSO-009",
+          "description": "Colle de faence",
+          "resultat": "Absence d'amiante",
+          "localisations": [
+            "1er tage - cuisine",
+            "1er tage - salle de bain/wc"
+          ],
+          "prelevements": [
+            {
+              "id": "P015",
+              "localisation": "1er tage - cuisine",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+            },
+            {
+              "id": "P016",
+              "localisation": "1er tage - salle de bain/wc",
+              "photo": "",
+              "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+              "resultat": "Absence d'amiante",
+              "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "zpsos": [
+    {
+      "id": "ZPSO-001",
+      "description": "Enduit +peinture sur murs torchis ( pices sche)",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - dgagement",
+        "1er tage - chambre 1",
+        "1er tage - cellier"
+      ],
+      "prelevements": [
+        {
+          "id": "P001",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+        },
+        {
+          "id": "P002",
+          "localisation": "1er tage - dgagement",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-002",
+      "description": "Enduit +peinture sur murs torchis ( pices humide)",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - cuisine",
+        "1er tage - salle de bain/wc"
+      ],
+      "prelevements": [
+        {
+          "id": "P003",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+        },
+        {
+          "id": "P004",
+          "localisation": "1er tage - salle de bain/wc",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable enduit pltreux blanc en vrac ([Met] Peinture non sparable + enduit pltreux blanc en vrac)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-003",
+      "description": "Bandes calicot",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - dgagement",
+        "1er tage - chambre 1",
+        "1er tage - cellier"
+      ],
+      "prelevements": [
+        {
+          "id": "P005",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        },
+        {
+          "id": "P006",
+          "localisation": "1er tage - dgagement",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-004",
+      "description": "Bandes calicot",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - cuisine",
+        "1er tage - salle de bain/wc"
+      ],
+      "prelevements": [
+        {
+          "id": "P007",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        },
+        {
+          "id": "P008",
+          "localisation": "1er tage - salle de bain/wc",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-005",
+      "description": "Bandes calicot",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - cuisine",
+        "1er tage - dgagement",
+        "1er tage - chambre 1",
+        "1er tage - cellier",
+        "1er tage - salle de bain/wc"
+      ],
+      "prelevements": [
+        {
+          "id": "P009",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        },
+        {
+          "id": "P010",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable papier ([Met] Peinture non sparable + papier)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-006",
+      "description": "Ragrage+colle",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - cuisine",
+        "1er tage - dgagement",
+        "1er tage - chambre 1",
+        "1er tage - cellier",
+        "1er tage - salle de bain/wc"
+      ],
+      "prelevements": [
+        {
+          "id": "P011",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "Couche 1: Non analys[Nonanalyse] Peinture en faible quantit non sparable carrelage (Non analys[Nonanalyse] Peinture en faible quantit non sparable + carrelage) Couche 2: [Met] Colle grise en faible quantit ([Met] Colle grise en faible quantit)"
+        },
+        {
+          "id": "P012",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Ragrage gris en vrac ([Met] Ragrage gris en vrac)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-007",
+      "description": "Plaques souples bitumineuses antivibratiles sous vier",
+      "resultat": "Prsence d'amiante",
+      "localisations": [
+        "1er tage - cuisine"
+      ],
+      "prelevements": [
+        {
+          "id": "P013",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Prsence d'amiante",
+          "commentaire_labo": "[Met] Matriau bitumineux noir ([Met] Matriau bitumineux noir)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-008",
+      "description": "Joint silicone",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - cuisine"
+      ],
+      "prelevements": [
+        {
+          "id": "P014",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Matriau souple blanc ([Met] Matriau souple blanc)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-009",
+      "description": "Colle de faence",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - cuisine",
+        "1er tage - salle de bain/wc"
+      ],
+      "prelevements": [
+        {
+          "id": "P015",
+          "localisation": "1er tage - cuisine",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+        },
+        {
+          "id": "P016",
+          "localisation": "1er tage - salle de bain/wc",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peinture non sparable matriau beige en vrac ([Met] Peinture non sparable + matriau beige en vrac)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-010",
+      "description": "Joint d'tanchit entre menuiserie et structure sur porte d'entre",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour"
+      ],
+      "prelevements": [
+        {
+          "id": "P017",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Peintures multiples ([Met] Peintures multiples)"
+        },
+        {
+          "id": "P018",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-011",
+      "description": "Joint de Parclose fenetres pvc",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - cuisine",
+        "1er tage - chambre 1"
+      ],
+      "prelevements": [
+        {
+          "id": "P019",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Matriau souple gris ([Met] Matriau souple gris)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-012",
+      "description": "Joint d'tanchit entre menuiserie et structure sur fenetres pvc",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - cuisine",
+        "1er tage - chambre 1"
+      ],
+      "prelevements": [
+        {
+          "id": "P020",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Matriau souple beige ([Met] Matriau souple beige)"
+        }
+      ]
+    },
+    {
+      "id": "ZPSO-013",
+      "description": "Joint d'tanchit entre ouvrant et dormant fenetres pvc",
+      "resultat": "Absence d'amiante",
+      "localisations": [
+        "1er tage - sjour",
+        "1er tage - cuisine",
+        "1er tage - chambre 1"
+      ],
+      "prelevements": [
+        {
+          "id": "P021",
+          "localisation": "1er tage - sjour",
+          "photo": "",
+          "pv": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+          "resultat": "Absence d'amiante",
+          "commentaire_labo": "[Met] Matriau souple noir ([Met] Matriau souple noir)"
+        }
+      ]
+    }
+  ],
+  "documents": {
+    "remis": [
+      "Rapports concernant la recherche d'amiante dj raliss"
+    ],
+    "demandes": [
+      "Non"
+    ]
+  },
+  "ecarts_norme": [
+    {
+      "observation": "Plan de prvention ralis avant intervention sur site",
+      "oui": false,
+      "non": false,
+      "so": true
+    },
+    {
+      "observation": "Vide sanitaire accessible et visitable",
+      "oui": false,
+      "non": false,
+      "so": true
+    },
+    {
+      "observation": "Combles accessibles et visitables",
+      "oui": false,
+      "non": false,
+      "so": true
+    },
+    {
+      "observation": "Toiture accessible et visitable",
+      "oui": false,
+      "non": false,
+      "so": true
+    },
+    {
+      "observation": "Btiment vide d'occupants",
+      "oui": false,
+      "non": true,
+      "so": false
+    },
+    {
+      "observation": "Btiment vide de mobiliers",
+      "oui": false,
+      "non": true,
+      "so": false
+    },
+    {
+      "observation": "Equipements en fonctionnement",
+      "oui": true,
+      "non": false,
+      "so": false
+    }
+  ]
+}
