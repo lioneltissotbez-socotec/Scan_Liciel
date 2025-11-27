@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "LiColonne_id_classement_champs": "00000",
+      "id_classement_champs": "00000",
+      "LiColonne_ClefComposant": "2024_02_05_14_26_11_369920400288078",
+      "ClefComposant": "2024_02_05_14_26_11_369920400288078",
+      "LiColonne_Doc_Remis": "Rapports concernant la recherche d'amiante dj raliss",
+      "Doc_Remis": "Rapports concernant la recherche d'amiante dj raliss",
+      "LiColonne_Doc_Demandes": "Non",
+      "Doc_Demandes": "Non"
+    }
+  ],
+  "meta": {
+    "source": "Table_Z_Amiante_doc_remis.xml",
+    "type": "collection",
+    "itemTag": "LiItem_table_Z_Amiante_doc_remis",
+    "count": 1
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "LiColonne_id_classement_champs": "00000",
+      "id_classement_champs": "00000",
+      "LiColonne_Plan": "PV_Analyse_9780060_Resultat_1_1",
+      "Plan": "PV_Analyse_9780060_Resultat_1_1",
+      "LiColonne_Clef_composant": "2024_02_05_14_17_39_07367710025247030",
+      "Clef_composant": "2024_02_05_14_17_39_07367710025247030",
+      "LiColonne_Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+      "Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_1.jpg",
+      "LiColonne_Acces_relatif_plan": "OUI",
+      "Acces_relatif_plan": "OUI",
+      "LiColonne_Legende": "",
+      "Legende": "",
+      "LiColonne_MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4",
+      "MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4"
+    },
+    {
+      "LiColonne_id_classement_champs": "00001",
+      "id_classement_champs": "00001",
+      "LiColonne_Plan": "PV_Analyse_9780060_Resultat_1_2",
+      "Plan": "PV_Analyse_9780060_Resultat_1_2",
+      "LiColonne_Clef_composant": "2024_02_05_14_17_39_07367711043405291",
+      "Clef_composant": "2024_02_05_14_17_39_07367711043405291",
+      "LiColonne_Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_2.jpg",
+      "Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_2.jpg",
+      "LiColonne_Acces_relatif_plan": "OUI",
+      "Acces_relatif_plan": "OUI",
+      "LiColonne_Legende": "",
+      "Legende": "",
+      "LiColonne_MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4",
+      "MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4"
+    },
+    {
+      "LiColonne_id_classement_champs": "00002",
+      "id_classement_champs": "00002",
+      "LiColonne_Plan": "PV_Analyse_9780060_Resultat_1_3",
+      "Plan": "PV_Analyse_9780060_Resultat_1_3",
+      "LiColonne_Clef_composant": "2024_02_05_14_17_39_07367712062372582",
+      "Clef_composant": "2024_02_05_14_17_39_07367712062372582",
+      "LiColonne_Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_3.jpg",
+      "Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_3.jpg",
+      "LiColonne_Acces_relatif_plan": "OUI",
+      "Acces_relatif_plan": "OUI",
+      "LiColonne_Legende": "",
+      "Legende": "",
+      "LiColonne_MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4",
+      "MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4"
+    },
+    {
+      "LiColonne_id_classement_champs": "00003",
+      "id_classement_champs": "00003",
+      "LiColonne_Plan": "PV_Analyse_9780060_Resultat_1_4",
+      "Plan": "PV_Analyse_9780060_Resultat_1_4",
+      "LiColonne_Clef_composant": "2024_02_05_14_17_39_07367713052354873",
+      "Clef_composant": "2024_02_05_14_17_39_07367713052354873",
+      "LiColonne_Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_4.jpg",
+      "Repertoire_plan": "prelevements_amiante\\PV_Analyse_9780060_Resultat_1\\PV_Analyse_9780060_Resultat_1_4.jpg",
+      "LiColonne_Acces_relatif_plan": "OUI",
+      "Acces_relatif_plan": "OUI",
+      "LiColonne_Legende": "",
+      "Legende": "",
+      "LiColonne_MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4",
+      "MD5_PDF_Source": "a80bada5e444c39a2a63bd2dfb6fefa4"
+    }
+  ],
+  "meta": {
+    "source": "Table_General_Amiante_Analyses.xml",
+    "type": "collection",
+    "itemTag": "LiItem_table_General_Amiante_Analyses",
+    "count": 4
+  }
+}

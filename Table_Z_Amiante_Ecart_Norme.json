@@ -1,0 +1,108 @@
+{
+  "items": [
+    {
+      "LiColonne_id_classement_champs": "00000",
+      "id_classement_champs": "00000",
+      "LiColonne_ClefComposant": "2023_09_06_14_50_57_28134360061781050",
+      "ClefComposant": "2023_09_06_14_50_57_28134360061781050",
+      "LiColonne_Observation": "Plan de prvention ralis avant intervention sur site",
+      "Observation": "Plan de prvention ralis avant intervention sur site",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "",
+      "Non": "",
+      "LiColonne_SO": "X",
+      "SO": "X"
+    },
+    {
+      "LiColonne_id_classement_champs": "00001",
+      "id_classement_champs": "00001",
+      "LiColonne_ClefComposant": "2023_09_06_14_50_57_28134361011578791",
+      "ClefComposant": "2023_09_06_14_50_57_28134361011578791",
+      "LiColonne_Observation": "Vide sanitaire accessible et visitable",
+      "Observation": "Vide sanitaire accessible et visitable",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "",
+      "Non": "",
+      "LiColonne_SO": "X",
+      "SO": "X"
+    },
+    {
+      "LiColonne_id_classement_champs": "00002",
+      "id_classement_champs": "00002",
+      "LiColonne_ClefComposant": "2023_09_06_14_50_57_28134362062185562",
+      "ClefComposant": "2023_09_06_14_50_57_28134362062185562",
+      "LiColonne_Observation": "Combles accessibles et visitables",
+      "Observation": "Combles accessibles et visitables",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "",
+      "Non": "",
+      "LiColonne_SO": "X",
+      "SO": "X"
+    },
+    {
+      "LiColonne_id_classement_champs": "00003",
+      "id_classement_champs": "00003",
+      "LiColonne_ClefComposant": "2023_09_06_14_52_40_4794457008880306",
+      "ClefComposant": "2023_09_06_14_52_40_4794457008880306",
+      "LiColonne_Observation": "Toiture accessible et visitable",
+      "Observation": "Toiture accessible et visitable",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "",
+      "Non": "",
+      "LiColonne_SO": "X",
+      "SO": "X"
+    },
+    {
+      "LiColonne_id_classement_champs": "00004",
+      "id_classement_champs": "00004",
+      "LiColonne_ClefComposant": "2023_09_06_14_53_08_9168479005451484",
+      "ClefComposant": "2023_09_06_14_53_08_9168479005451484",
+      "LiColonne_Observation": "Btiment vide d'occupants",
+      "Observation": "Btiment vide d'occupants",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "X",
+      "Non": "X",
+      "LiColonne_SO": "",
+      "SO": ""
+    },
+    {
+      "LiColonne_id_classement_champs": "00005",
+      "id_classement_champs": "00005",
+      "LiColonne_ClefComposant": "2023_09_06_14_53_15_1421589009360387",
+      "ClefComposant": "2023_09_06_14_53_15_1421589009360387",
+      "LiColonne_Observation": "Btiment vide de mobiliers",
+      "Observation": "Btiment vide de mobiliers",
+      "LiColonne_Oui": "",
+      "Oui": "",
+      "LiColonne_Non": "X",
+      "Non": "X",
+      "LiColonne_SO": "",
+      "SO": ""
+    },
+    {
+      "LiColonne_id_classement_champs": "00006",
+      "id_classement_champs": "00006",
+      "LiColonne_ClefComposant": "2023_09_06_14_53_21_5761081002109996",
+      "ClefComposant": "2023_09_06_14_53_21_5761081002109996",
+      "LiColonne_Observation": "Equipements en fonctionnement",
+      "Observation": "Equipements en fonctionnement",
+      "LiColonne_Oui": "X",
+      "Oui": "X",
+      "LiColonne_Non": "",
+      "Non": "",
+      "LiColonne_SO": "",
+      "SO": ""
+    }
+  ],
+  "meta": {
+    "source": "Table_Z_Amiante_Ecart_Norme.xml",
+    "type": "collection",
+    "itemTag": "LiItem_table_Z_Amiante_Ecart_Norme",
+    "count": 7
+  }
+}
