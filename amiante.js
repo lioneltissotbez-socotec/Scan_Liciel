@@ -4,6 +4,7 @@
  */
 
 let groupedData = {};
+let jsonPayloads = {};
 
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
@@ -22,6 +23,8 @@ jsonDebugButtons.forEach(btn => {
     afficherJsonDansModal(path, label);
   });
 });
+
+toggleJsonButtons(false);
 
 if (closeJsonModal) closeJsonModal.addEventListener("click", fermerJsonModal);
 if (jsonModal?.querySelector) {
@@ -83,6 +86,13 @@ async function afficherJsonDansModal(path, label = "Fichier JSON") {
   jsonModalBody.textContent = "Chargement...";
   if (jsonModalTitle) jsonModalTitle.textContent = label;
 
+  const inMemory = jsonPayloads[path];
+
+  if (inMemory) {
+    jsonModalBody.textContent = formaterJsonLisible(inMemory);
+    return;
+  }
+
   try {
     const response = await fetch(path, { cache: "no-cache" });
     if (!response.ok) {
@@ -114,6 +124,29 @@ function formaterJsonLisible(text = "") {
   }
 }
 
+function setJsonPayloads(tables = {}) {
+  jsonPayloads = {};
+
+  Object.entries(tables).forEach(([key, data]) => {
+    jsonPayloads[key] = JSON.stringify({
+      items: data,
+      meta: { source: key, count: Array.isArray(data) ? data.length : 0 }
+    });
+  });
+
+  toggleJsonButtons(Object.keys(jsonPayloads).length > 0);
+}
+
+function toggleJsonButtons(enabled) {
+  jsonDebugButtons.forEach(btn => {
+    if (enabled) {
+      btn.removeAttribute("disabled");
+    } else {
+      btn.setAttribute("disabled", "disabled");
+    }
+  });
+}
+
 async function chargerSyntheseAutomatique() {
   const payload = lirePayloadAutomatique();
   if (payload) {
@@ -121,18 +154,17 @@ async function chargerSyntheseAutomatique() {
     return;
   }
 
-  const jsonLocal = await chargerDepuisJsonLocal();
-  if (jsonLocal) {
-    appliquerPayloadAutomatique(jsonLocal);
-    return;
+  toggleJsonButtons(false);
+  if (autoXmlStatus) {
+    autoXmlStatus.textContent = "Aucune donnée amiante reçue. Ouvrez cette page depuis le module administratif.";
   }
-
-  await chargerSyntheseDepuisXmlLocal();
 }
 
 function appliquerPayloadAutomatique(payload) {
   try {
     const rows = payload?.rows || [];
+    setJsonPayloads(payload?.tables || {});
+
     if (!rows.length) {
       if (autoXmlStatus) autoXmlStatus.textContent = "Aucune donnée amiante reçue.";
       return;
@@ -145,6 +177,7 @@ function appliquerPayloadAutomatique(payload) {
     }
   } catch (err) {
     console.error("Impossible de charger la synthèse amiante automatique", err);
+    setJsonPayloads({});
     if (autoXmlStatus) autoXmlStatus.textContent = "Lecture automatique impossible. Relancez depuis le module administratif.";
   }
 }
@@ -171,7 +204,7 @@ function lirePayloadAutomatique() {
 
   if (!rawSession && !rawLocal) {
     if (autoXmlStatus) {
-      autoXmlStatus.textContent = "En attente des données XML transmises par le module administratif.";
+      autoXmlStatus.textContent = "En attente des données amiante transmises par le module administratif.";
     }
     return null;
   }
