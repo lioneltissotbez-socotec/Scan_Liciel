@@ -6,6 +6,25 @@
 let groupedData = {};
 let jsonPayloads = {};
 
+const Z_AMIANTE_CHAMPS = [
+  "LiColonne_Localisation",
+  "LiColonne_Ouvrages",
+  "LiColonne_Partie_Inspectee",
+  "LiColonne_Description",
+  "LiColonne_Zone",
+  "LiColonne_Croquis",
+  "LiColonne_Photo",
+  "LiColonne_Id_Prelevement",
+  "LiColonne_Resultats",
+  "LiColonne_Justification",
+  "LiColonne_Etat_Conservation",
+  "LiColonne_Commentaire_Etat_Degradation",
+  "LiColonne_Reperage_2",
+  "LiColonne_Reperage_3",
+  "LiColonne_num_prelevement",
+  "LiColonne_ListeCSP_amiante"
+];
+
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const generateBtn = document.getElementById("generateBtn");
@@ -144,6 +163,45 @@ function toggleJsonButtons(enabled) {
     } else {
       btn.setAttribute("disabled", "disabled");
     }
+  });
+}
+
+function lireChampZAmiante(item, key) {
+  if (!item) return "";
+  const valeur = item[key];
+  if (valeur !== undefined && valeur !== null) return `${valeur}`.trim();
+
+  if (key.startsWith("LiColonne_")) {
+    const fallbackKey = key.replace("LiColonne_", "");
+    const fallback = item[fallbackKey];
+    if (fallback !== undefined && fallback !== null) return `${fallback}`.trim();
+  }
+
+  return "";
+}
+
+function normaliserMateriauxZAmiante(items = []) {
+  return items.map(item => {
+    const normalise = {};
+
+    Z_AMIANTE_CHAMPS.forEach(key => {
+      normalise[key] = lireChampZAmiante(item, key);
+    });
+
+    const reperage2 = normalise.LiColonne_Reperage_2;
+    if (reperage2 === "1") normalise.type_reperage = "prelevement";
+    else if (reperage2 === "0") normalise.type_reperage = "sondage";
+
+    normalise.Local_visite = normalise.LiColonne_Localisation;
+    normalise.Ouvrage = normalise.LiColonne_Ouvrages;
+    normalise.Partie = normalise.LiColonne_Partie_Inspectee;
+    normalise.materiau_produit = normalise.LiColonne_Description || normalise.Partie;
+    normalise.resultat = normalise.LiColonne_Resultats;
+    normalise.num_prelevement = normalise.LiColonne_num_prelevement;
+    normalise.Num_Materiau = normalise.LiColonne_Reperage_3 || normalise.LiColonne_Id_Prelevement;
+    normalise.Num_ZPSO = normalise.LiColonne_Id_Prelevement;
+
+    return normalise;
   });
 }
 
@@ -287,24 +345,6 @@ async function chargerSyntheseDepuisXmlLocal() {
   } catch (err) {
     console.error("Impossible de générer la synthèse amiante à partir des XML locaux", err);
     if (autoXmlStatus) autoXmlStatus.textContent = "Impossible de générer la synthèse amiante à partir des XML locaux.";
-  }
-}
-
-async function chargerDepuisJsonLocal() {
-  try {
-    const response = await fetch("amiante_auto.json");
-    if (!response.ok) return null;
-
-    const payload = await response.json();
-    if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) return null;
-
-    const meta = payload.meta || {};
-    const label = meta.label || meta.id || meta.generatedFrom || "mission";
-    const createdAt = meta.createdAt || Date.now();
-    return { rows: payload.rows, meta: { ...meta, label, createdAt } };
-  } catch (err) {
-    console.warn("Impossible de charger amiante_auto.json", err);
-    return null;
   }
 }
 
@@ -631,6 +671,11 @@ function extraireLignesXml(doc, rawText = "", fichierName = "") {
 
   const lignes = children.map(el => transformerElementEnObjet(el));
   if (!lignes.length) return extraireLignesDepuisTexte(rawText, fichierName);
+
+  const lowerName = `${fichierName}`.toLowerCase();
+  if (lowerName.includes("table_z_amiante_prelevements")) return lignes;
+  if (lowerName.includes("table_z_amiante")) return normaliserMateriauxZAmiante(lignes);
+
   return lignes;
 }
 
@@ -668,18 +713,7 @@ function extraireLignesDepuisTexte(rawText = "", fichierName = "") {
 
   if (/liitem_table_z_amiante/i.test(text)) {
     const items = parseItems("LiItem_table_Z_Amiante");
-    return items.map(item => ({
-      ...item,
-      Local_visite: item.Local_visite || item.Localisation || item.Detail_loc,
-      Ouvrage: item.Ouvrage || item.Ouvrages,
-      Partie: item.Partie || item.Partie_Inspectee,
-      materiau_produit: item.materiau_produit || item.Description || item.Partie_Inspectee,
-      resultat: item.resultat || item.Resultats,
-      num_prelevement: item.num_prelevement || item.Num_Prelevement,
-      Num_Materiau: item.Num_Materiau || item.Reperage_3 || item.Id_Prelevement_Int_txt,
-      Num_ZPSO: item.Num_ZPSO || item.Id_Prelevement,
-      Dossier_Materiau: item.Dossier_Materiau || item.LiColonne_Dossier_Materiau
-    }));
+    return normaliserMateriauxZAmiante(items);
   }
 
   const colonneMatches = [...text.matchAll(/<LiColonne_([^>]+)>([\s\S]*?)<\/LiColonne_\1>/g)];
