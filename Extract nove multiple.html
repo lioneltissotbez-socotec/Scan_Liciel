@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Synthèse amiante – Multi-missions LICIEL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --primary: #005fa3;
+      --primary-bg: #e6f2ff;
+      --border: #d5d9e1;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      padding: 25px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    button.secondary {
+      background: #e9ecf3;
+      color: #222;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .status.ok { color: #0b7c34; }
+    .status.warn { color: #b25a00; }
+    .status.error { color: #b00020; }
+
+    .table-wrapper {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      overflow: auto;
+      max-height: calc(100vh - 200px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1200px;
+    }
+
+    thead {
+      background: var(--primary-bg);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    th, td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e0e4ec;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafbfd;
+    }
+
+    .tag {
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      display: inline-block;
+      border: 1px solid #ccc;
+    }
+
+    .tag.presence {
+      background: #fdeaea;
+      border-color: #cc3b3b;
+      color: #a30000;
+    }
+
+    .tag.absence {
+      background: #e9f7e9;
+      border-color: #3da83d;
+      color: #1d6b1d;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🧱 Synthèse amiante – multi-missions LICIEL</h1>
+
+  <div class="panel">
+    <div class="btn-row">
+      <button id="pickSingleBtn" class="primary">📁 Dossier unique (1 mission)</button>
+      <button id="pickMultiBtn" class="secondary">📁 Dossiers contenant plusieurs missions</button>
+      <button id="exportCsvBtn" class="secondary" disabled>📤 Export CSV</button>
+      <button id="copyTableBtn" class="secondary" disabled>📋 Copier tableau</button>
+      <span id="status" class="status">En attente…</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="table-wrapper">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Num_EI</th>
+            <th>Nom_EI</th>
+            <th>Num_UG</th>
+            <th>Commune</th>
+            <th>Local_visite</th>
+            <th>Etage</th>
+            <th>occupation</th>
+            <th>date_realisation</th>
+            <th>operateur</th>
+            <th>reference_rapport</th>
+            <th>composant_construction</th>
+            <th>materiau_produit</th>
+            <th>num_prelevement</th>
+            <th>resultat</th>
+            <th>applicabilite_ZPSO</th>
+            <th>etat_conservation</th>
+            <th>quantite</th>
+            <th>unité</th>
+            <th>resultat_Hap</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Ordre unique de référence pour tableau, copie et CSV
+    const HEADERS = [
+      "Num_EI",
+      "Nom_EI",
+      "Num_UG",
+      "Commune",
+      "Local_visite",
+      "Etage",
+      "occupation",
+      "date_realisation",
+      "operateur",
+      "reference_rapport",
+      "composant_construction",
+      "materiau_produit",
+      "num_prelevement",
+      "resultat",
+      "applicabilite_ZPSO",
+      "etat_conservation",
+      "quantite",
+      "unité",
+      "resultat_Hap"
+    ];
+
+    let rows = [];
+
+    // ==============================
+    // Lecture multi-encodage (UTF-8 / ISO-8859-1 / Windows-1252)
+    // ==============================
+    async function readFileCorrectly(file) {
+      const buffer = await file.arrayBuffer();
+      try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+      } catch (e) {}
+      try {
+        return new TextDecoder("iso-8859-1").decode(buffer);
+      } catch (e) {}
+      return new TextDecoder("windows-1252").decode(buffer);
+    }
+
+    // ==============================
+    // Utilitaires
+    // ==============================
+    function cleanText(str) {
+      if (!str) return "";
+      return str
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // supprime caractères de contrôle
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function parseXml(text) {
+      return new DOMParser().parseFromString(text, "text/xml");
+    }
+
+    function get(el, tag) {
+      const n = el.getElementsByTagName(tag)[0];
+      return cleanText(n ? n.textContent : "");
+    }
+
+    async function* walk(dir) {
+      for await (const [name, handle] of dir.entries()) {
+        if (handle.kind === "file") {
+          yield { name, handle };
+        } else {
+          yield* walk(handle);
+        }
+      }
+    }
+
+    async function find(root, filename) {
+      for await (const e of walk(root)) {
+        if (e.name === filename) return e.handle;
+      }
+      return null;
+    }
+
+    function buildNumPrelevements(list, loc) {
+      if (!list || !list.length) return "";
+      const parts = loc.split(";").map(s => cleanText(s)).filter(Boolean);
+      if (parts.length === list.length) {
+        return list.map((p,i)=>`${p} (${parts[i]})`).join(";");
+      }
+      const last = parts[parts.length-1] || "";
+      return list.map((p,i)=>`${p} (${parts[i] || last})`).join(";");
+    }
+
+    function getEtage(loc) {
+      const first = loc.split(";")[0];
+      return cleanText(first.split("-")[0]);
+    }
+
+    // ==============================
+    // Lecture d'une mission unique
+    // ==============================
+    async function readMission(root, quiet = false) {
+      const status = document.getElementById("status");
+      if (!quiet) {
+        status.textContent = `Analyse de la mission « ${root.name} »…`;
+        status.className = "status";
+      }
+
+      // Tables amiante
+      const fileZHandle = await find(root, "Table_Z_Amiante.xml");
+      const filePHandle = await find(root, "Table_Z_Amiante_prelevements.xml");
+
+      if (!fileZHandle) {
+        if (!quiet) {
+          status.textContent = "❌ Table_Z_Amiante.xml introuvable dans ce dossier.";
+          status.className = "status error";
+        }
+        return [];
+      }
+
+      const fileZ = await fileZHandle.getFile();
+      const textZ = await readFileCorrectly(fileZ);
+      const xmlZ = parseXml(textZ);
+
+      // Prélevements (optionnel)
+      let prelevMap = {};
+      if (filePHandle) {
+        const fileP = await filePHandle.getFile();
+        const textP = await readFileCorrectly(fileP);
+        const xmlP = parseXml(textP);
+
+        for (const it of xmlP.getElementsByTagName("LiItem_table_Z_Amiante_prelevements")) {
+          const zpso = get(it, "LiColonne_Data_02");
+          const prl = get(it, "LiColonne_Data_01");
+          if (!zpso || !prl) continue;
+          if (!prelevMap[zpso]) prelevMap[zpso] = [];
+          prelevMap[zpso].push(prl);
+        }
+      }
+
+      // ==============================
+      // Lecture administrative : Table_General_Bien.xml
+      // ==============================
+      let Num_EI = "";
+      let Nom_EI = "";
+      let Num_UG = "";
+      let Commune = "";
+      let occupation = "";
+      let date_realisation = "";
+      let operateur = "";
+      let reference = "";
+
+      const adminHandle = await find(root, "Table_General_Bien.xml");
+      if (adminHandle) {
+        const adminFile = await adminHandle.getFile();
+        const adminText = await readFileCorrectly(adminFile);
+        const xmlAdm = parseXml(adminText);
+        const node = xmlAdm.getElementsByTagName("LiTable_General_Bien")[0];
+        if (node) {
+          Num_EI = get(node, "LiColonne_Immeuble_Loc_copro");
+          Nom_EI = get(node, "LiColonne_Immeuble_Adresse1");
+          Num_UG = get(node, "LiColonne_Immeuble_Lot");
+          Commune = get(node, "LiColonne_Immeuble_Commune");
+          occupation = get(node, "LiColonne_Immeuble_Occupe_vide");
+          date_realisation = get(node, "LiColonne_Mission_Date_Visite");
+          const opNom = get(node, "LiColonne_Gen_Nom_operateur");
+          operateur = opNom ? `SOCOTEC ${opNom}` : "";
+          reference = get(node, "LiColonne_Mission_Num_Dossier");
+        }
+      }
+
+      const items = xmlZ.getElementsByTagName("LiItem_table_Z_Amiante");
+      const list = [];
+
+      for (const it of items) {
+        const zpso = get(it, "LiColonne_Id_Prelevement");
+        const mat = get(it, "LiColonne_Description");
+        const comp = get(it, "LiColonne_Ouvrages");
+        const result = get(it, "LiColonne_Resultats");
+        const etat = get(it, "LiColonne_Etat_Conservation");
+        const loc = get(it, "LiColonne_Detail_loc");
+        const qty = get(it, "LiColonne_SurfaceMateriau");
+        const unit = get(it, "LiColonne_SurfaceMateriauUnite");
+
+        let prl = [];
+        const raw = get(it, "LiColonne_num_prelevement");
+        if (raw) {
+          prl = raw.split(";").map(s => cleanText(s)).filter(Boolean);
+        } else if (prelevMap[zpso]) {
+          prl = [...prelevMap[zpso]];
+        }
+        const colM = buildNumPrelevements(prl, loc);
+
+        const row = {
+          Num_EI,
+          Nom_EI,
+          Num_UG,
+          Commune,
+          Local_visite: loc,
+          Etage: getEtage(loc),
+          occupation,
+          date_realisation,
+          operateur,
+          reference_rapport: reference,
+          composant_construction: comp,
+          materiau_produit: mat,
+          num_prelevement: colM,
+          resultat: result,
+          applicabilite_ZPSO: zpso,
+          etat_conservation: etat,
+          quantite: qty,
+          unité: unit,
+          resultat_Hap: ""
+        };
+
+        list.push(row);
+      }
+
+      if (!quiet) {
+        status.textContent = `✔ ${list.length} lignes générées pour « ${root.name} ».`;
+        status.className = "status ok";
+      }
+
+      return list;
+    }
+
+    // ==============================
+    // Lecture de plusieurs missions (dossier parent)
+    // ==============================
+    async function readAllMissions(parent) {
+      const status = document.getElementById("status");
+      status.textContent = "Analyse de tous les sous-dossiers…";
+      status.className = "status";
+
+      const all = [];
+      let missionCount = 0;
+
+      for await (const [name, handle] of parent.entries()) {
+        if (handle.kind === "directory") {
+          const list = await readMission(handle, true);
+          if (list.length > 0) {
+            missionCount++;
+            all.push(...list);
+          }
+        }
+      }
+
+      if (missionCount) {
+        status.textContent = `✔ ${missionCount} mission(s), ${all.length} lignes générées.`;
+        status.className = "status ok";
+      } else {
+        status.textContent = "⚠ Aucun dossier de mission valide trouvé dans ce dossier.";
+        status.className = "status warn";
+      }
+
+      return all;
+    }
+
+    // ==============================
+    // Rendu du tableau HTML
+    // ==============================
+    function render(rows) {
+      const body = document.getElementById("resultBody");
+      body.innerHTML = "";
+
+      for (const r of rows) {
+        const tr = document.createElement("tr");
+
+        function addCell(value, isResult = false) {
+          const td = document.createElement("td");
+          if (isResult && value) {
+            const span = document.createElement("span");
+            const low = value.toLowerCase();
+            if (low.includes("présence")) {
+              span.className = "tag presence";
+            } else {
+              span.className = "tag absence";
+            }
+            span.textContent = value;
+            td.appendChild(span);
+          } else {
+            td.textContent = value || "";
+          }
+          tr.appendChild(td);
+        }
+
+        // Respect de l'ordre HEADERS
+        addCell(r.Num_EI);
+        addCell(r.Nom_EI);
+        addCell(r.Num_UG);
+        addCell(r.Commune);
+        addCell(r.Local_visite);
+        addCell(r.Etage);
+        addCell(r.occupation);
+        addCell(r.date_realisation);
+        addCell(r.operateur);
+        addCell(r.reference_rapport);
+        addCell(r.composant_construction);
+        addCell(r.materiau_produit);
+        addCell(r.num_prelevement);
+        addCell(r.resultat, true);
+        addCell(r.applicabilite_ZPSO);
+        addCell(r.etat_conservation);
+        addCell(r.quantite);
+        addCell(r.unité);
+        addCell(r.resultat_Hap);
+
+        body.appendChild(tr);
+      }
+
+      document.getElementById("exportCsvBtn").disabled = rows.length === 0;
+      document.getElementById("copyTableBtn").disabled = rows.length === 0;
+    }
+
+    // ==============================
+    // Export CSV (avec BOM pour Excel, accents OK)
+    // ==============================
+    function exportCSV(rows) {
+      if (!rows.length) return;
+      const sep = ";";
+
+      const headerLine = HEADERS.join(sep);
+      const lines = rows.map(r =>
+        HEADERS.map(h => {
+          let v = r[h] ?? "";
+          v = String(v)
+            .replace(/\r?\n/g, " ")
+            .replace(/;/g, ",");
+          return v;
+        }).join(sep)
+      );
+
+      const csvText = "\uFEFF" + [headerLine, ...lines].join("\r\n");
+      const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "synthese_amiante.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==============================
+    // Copier le tableau (tab séparé, prêt pour Excel)
+    // ==============================
+    function copyTable(rows) {
+      if (!rows.length) return;
+
+      const headerLine = HEADERS.join("\t");
+      const lines = rows.map(r =>
+        HEADERS.map(h => r[h] ?? "").join("\t")
+      );
+
+      const txt = [headerLine, ...lines].join("\n");
+      navigator.clipboard.writeText(txt)
+        .then(() => alert("Tableau copié !"))
+        .catch(err => alert("Échec de la copie : " + err));
+    }
+
+    // ==============================
+    // Gestion des boutons
+    // ==============================
+    document.getElementById("pickSingleBtn").onclick = async () => {
+      try {
+        const dir = await window.showDirectoryPicker();
+        rows = await readMission(dir, false);
+        render(rows);
+      } catch (e) {
+        console.warn(e);
+      }
+    };
+
+    document.getElementById("pickMultiBtn").onclick = async () => {
+      try {
+        const dir = await window.showDirectoryPicker();
+        rows = await readAllMissions(dir);
+        render(rows);
+      } catch (e) {
+        console.warn(e);
+      }
+    };
+
+    document.getElementById("exportCsvBtn").onclick = () => exportCSV(rows);
+    document.getElementById("copyTableBtn").onclick = () => copyTable(rows);
+  </script>
+</body>
+</html>
