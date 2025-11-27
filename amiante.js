@@ -289,6 +289,8 @@ async function chargerSyntheseAutomatique() {
   if (autoXmlStatus) {
     autoXmlStatus.textContent = "Aucune donnée amiante reçue. Ouvrez cette page depuis le module administratif.";
   }
+
+  await chargerSyntheseDepuisXmlLocal();
 }
 
 function appliquerPayloadAutomatique(payload) {
@@ -410,10 +412,15 @@ async function chargerSyntheseDepuisXmlLocal() {
       return;
     }
 
+    setJsonPayloads(parsed);
     processDataAndSetupNavigation(rows);
     if (autoXmlStatus) autoXmlStatus.textContent = "Synthèse amiante générée depuis les XML présents localement.";
 
-    const payload = { rows, meta: { id: generalInfo.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" } };
+    const payload = {
+      rows,
+      tables: parsed,
+      meta: { id: generalInfo.LiColonne_Gen_Num_rapport || "mission", createdAt: Date.now(), source: "local-xml" }
+    };
     sessionStorage.setItem("amianteAutoRows", JSON.stringify(payload));
   } catch (err) {
     console.error("Impossible de générer la synthèse amiante à partir des XML locaux", err);
