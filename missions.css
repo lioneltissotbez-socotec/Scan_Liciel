@@ -1,0 +1,128 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.table-wrapper.compact {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.mission-table,
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.mission-table th,
+.mission-table td,
+.preview-table th,
+.preview-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.mission-table thead,
+.preview-table thead {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f3f4ff;
+  color: #111827;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+
+.chip input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #e5edff;
+  color: #1d4ed8;
+}
+
+.tag {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.tag.presence { background: #fdeaea; border-color: #f87171; color: #991b1b; }
+.tag.absence { background: #ecfdf3; border-color: #34d399; color: #14532d; }
+.tag.suspect  { background: #fff7ed; border-color: #fb923c; color: #9a3412; }
+
+.small-muted {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.code-block {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 12px;
+  border-radius: 10px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.filter-value-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.filter-value-item button {
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.filter-value-item button.secondary-btn {
+  background: #e5edff;
+  color: #1d4ed8;
+}
+
+.count-pill {
+  background: #e5e7eb;
+  color: #111827;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
