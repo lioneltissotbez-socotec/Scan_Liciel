@@ -21,6 +21,7 @@ const DOMAIN_FILES = {
 window.addEventListener("DOMContentLoaded", () => {
   const rootBtn = document.getElementById("pickRoot");
   const openAmianteFilteredBtn = document.getElementById("openAmianteFiltered");
+  const openAnalyseMissionsBtn = document.getElementById("openAnalyseMissions");
   if (!rootBtn) {
     console.error("⛔ Bouton #pickRoot introuvable dans la page admin.html");
     return;
@@ -86,6 +87,31 @@ window.addEventListener("DOMContentLoaded", () => {
       sessionStorage.setItem("amianteAutoRows", serialized);
       localStorage.setItem("amianteAutoRows", serialized);
       window.open("amiante.html", "_blank", "noopener");
+    });
+  }
+
+  if (openAnalyseMissionsBtn) {
+    openAnalyseMissionsBtn.addEventListener("click", () => {
+      const list = filteredMissions();
+      if (!list.length) {
+        alert("Aucune mission à transmettre.");
+        return;
+      }
+
+      const payload = {
+        missions: list,
+        meta: {
+          createdAt: Date.now(),
+          source: "admin",
+          filter: currentFilterType ? { type: currentFilterType, value: currentFilterValue } : null,
+          domains: selectedDomains.size ? Array.from(selectedDomains) : []
+        }
+      };
+
+      const serialized = JSON.stringify(payload);
+      sessionStorage.setItem("missionsAutoPayload", serialized);
+      localStorage.setItem("missionsAutoPayload", serialized);
+      window.open("analyse_missions.html", "_blank", "noopener");
     });
   }
 });
@@ -732,6 +758,16 @@ function updateAmianteFilteredButton(missions = []) {
     : "Synthèse amiante (missions filtrées)";
 }
 
+function updateAnalyseMissionsButton(missions = []) {
+  const btn = document.getElementById("openAnalyseMissions");
+  if (!btn) return;
+
+  btn.disabled = missions.length === 0;
+  btn.textContent = missions.length
+    ? `Analyser (${missions.length} mission(s))`
+    : "Analyser dans missions";
+}
+
 function detectDomains(mission) {
   if (mission.domains && mission.domains.length) {
     return Array.from(new Set(mission.domains));
@@ -773,6 +809,7 @@ function renderMissionsTable() {
   document.getElementById("missionsCount").textContent = list.length + " mission(s)";
 
   updateAmianteFilteredButton(list);
+  updateAnalyseMissionsButton(list);
 
   if (!list.length) {
     container.innerHTML = "<p class='muted'>Aucune mission ne correspond au filtre.</p>";

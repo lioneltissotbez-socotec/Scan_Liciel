@@ -49,7 +49,36 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("exportJson").addEventListener("click", exportFilteredToSynthese);
   document.getElementById("copyJson").addEventListener("click", copyJson);
   renderFilterButtons();
+  chargerMissionsAutomatiques();
 });
+
+function chargerMissionsAutomatiques() {
+  const payload = lirePayloadMissions();
+  if (!payload) return;
+
+  try {
+    if (!Array.isArray(payload.missions) || !payload.missions.length) return;
+
+    missions = payload.missions;
+    currentFilterType = null;
+    currentFilterValue = null;
+    selectedTypes.clear();
+
+    renderFilterButtons();
+    renderFilterValues();
+    renderTypeFilters();
+    renderMissionsTable();
+    renderAmiantePreview();
+
+    const status = document.getElementById("status");
+    const label = payload?.meta?.filter
+      ? `${(FILTERS.find(f => f.key === payload.meta.filter.type) || {}).label || payload.meta.filter.type} : ${payload.meta.filter.value || "Tous"}`
+      : "module administratif";
+    status.textContent = `✔ ${missions.length} mission(s) reçue(s) depuis le ${label}`;
+  } catch (err) {
+    console.error("Impossible d'utiliser les missions pré-chargées", err);
+  }
+}
 
 async function handlePickParent() {
   const status = document.getElementById("status");
@@ -74,6 +103,33 @@ async function handlePickParent() {
       : "Aucune mission LICIEL valide trouvée";
   } catch (err) {
     console.warn("Sélection annulée ou erreur", err);
+  }
+}
+
+function lirePayloadMissions() {
+  const key = "missionsAutoPayload";
+  const EXPIRATION_MS = 10 * 60 * 1000;
+
+  const rawSession = sessionStorage.getItem(key);
+  const rawLocal = !rawSession ? localStorage.getItem(key) : null;
+  const raw = rawSession || rawLocal;
+  if (!raw) return null;
+
+  try {
+    const payload = JSON.parse(raw);
+    const createdAt = payload?.meta?.createdAt ? Number(payload.meta.createdAt) : null;
+    const age = createdAt ? Date.now() - createdAt : 0;
+
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+
+    if (createdAt && age > EXPIRATION_MS) return null;
+    return payload;
+  } catch (err) {
+    console.error("Impossible de lire missionsAutoPayload", err);
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+    return null;
   }
 }
 

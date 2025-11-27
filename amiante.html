@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Scan LICIEL – Synthèse Amiante</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="amiante-page">
   <header class="topbar">
@@ -18,17 +17,17 @@
       <div class="amiante-hero__text">
         <p class="pill-label">Amiante</p>
         <h1>Module de présentation amiante</h1>
-        <p class="muted">Dépose un fichier Excel de synthèse Amiante (.xlsx) exporté depuis LICIEL pour générer une vue consolidée par ville, adresse et logement.</p>
+        <p class="muted">Dépose un fichier JSON de synthèse Amiante exporté depuis les modules Administratif ou Analyse missions pour générer une vue consolidée par ville, adresse et logement.</p>
         <div class="upload-actions">
           <label for="fileInput" class="upload-label">Déposez ou sélectionnez un fichier</label>
-          <input type="file" id="fileInput" accept=".xlsx" />
-          <button id="generateBtn" class="primary-btn">Générer la synthèse</button>
+          <input type="file" id="fileInput" accept=".json,application/json" />
+          <button id="generateBtn" class="primary-btn">Importer le JSON</button>
         </div>
-        <div class="upload-hint">Glissez-déposez le fichier sur la zone ci-contre ou utilisez le sélecteur.</div>
+        <div class="upload-hint">Glissez-déposez le fichier JSON sur la zone ci-contre ou utilisez le sélecteur.</div>
       </div>
       <div class="amiante-dropzone" id="dropZone">
-        <p class="amiante-dropzone__title">Déposez le fichier Excel ici</p>
-        <p class="muted">Seuls les fichiers .xlsx sont pris en charge</p>
+        <p class="amiante-dropzone__title">Déposez le fichier JSON ici</p>
+        <p class="muted">Seuls les fichiers .json générés par Scan LICIEL sont pris en charge</p>
       </div>
     </section>
 
