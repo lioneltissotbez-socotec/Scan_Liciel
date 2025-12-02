@@ -426,7 +426,7 @@ function buildAmianteRowsFromXml(files, generalInfo = {}) {
   });
 
   const synthese = construireSyntheseDepuisXml(parsed);
-  const rows = convertirSyntheseEnRows(synthese, generalInfo);
+  const rows = convertirAmianteTablesEnRows(parsed, generalInfo);
   return { rows, synthese };
 }
 
@@ -567,46 +567,77 @@ function construireSyntheseDepuisXml(parsed) {
   return synthese;
 }
 
-function convertirSyntheseEnRows(synthese, generalInfo = {}) {
-  const commune = generalInfo.LiColonne_Immeuble_Commune || "";
-  const adresse = generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.LiColonne_Immeuble_Batiment || generalInfo.LiColonne_Immeuble_Nom || "";
-  const missionId = generalInfo.LiColonne_Gen_Num_rapport
-    || generalInfo.LiColonne_Gen_Num_mission
-    || generalInfo.LiColonne_Gen_Num_dossier
-    || generalInfo.LiColonne_Dossier_Materiau;
-  const numUG = missionId
-    || generalInfo.LiColonne_Loc_Lot
-    || generalInfo.LiColonne_Immeuble_Lot
-    || generalInfo.LiColonne_Immeuble_Loc_copro
-    || generalInfo.LiColonne_Loc_Numero
-    || "UG";
-  const date = generalInfo.LiColonne_Gen_Date_rapport || generalInfo.LiColonne_Gen_Date || generalInfo.LiColonne_Gen_Date_mission || "";
-  const operateur = generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.LiColonne_Gen_Operateur || "";
-  const rapport = generalInfo.LiColonne_Gen_Num_rapport || generalInfo.LiColonne_Gen_Numero_rapport || "";
-  const etage = generalInfo.LiColonne_Loc_Etage || generalInfo.LiColonne_Immeuble_Etage || "";
+function convertirAmianteTablesEnRows(parsed, generalInfo = {}) {
+  const clean = (str = "") => `${str}`.replace(/[\x00-\x1F]/g, " ").replace(/\s+/g, " ").trim();
+  const buildNumPrelevements = (list, loc) => {
+    if (!list || !list.length) return "";
+    const parts = `${loc || ""}`.split(";").map(s => clean(s)).filter(Boolean);
+    if (parts.length === list.length) return list.map((p, i) => `${p} (${parts[i]})`).join(";");
+    const last = parts[parts.length - 1] || "";
+    return list.map((p, i) => `${p} (${parts[i] || last})`).join(";");
+  };
+  const getEtage = loc => {
+    const first = `${loc || ""}`.split(";")[0];
+    return clean(first.split("-")[0]);
+  };
 
-  return (synthese.materiaux || []).map((mat, idx) => {
-    const prelevementIds = (mat.prelevements || []).map(p => p.id).filter(Boolean).join(", ");
-    const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
-    const nomEI = mat.localisation || adresse || "Adresse non précisée";
-    const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
-    const numUgFinal = numUG || "UG";
+  const Num_EI = clean(generalInfo.LiColonne_Immeuble_Loc_copro || "");
+  const Nom_EI = clean(generalInfo.LiColonne_Immeuble_Adresse1 || "");
+  const Num_UG = clean(generalInfo.LiColonne_Immeuble_Lot || generalInfo.LiColonne_Loc_Lot || "");
+  const Commune = clean(generalInfo.LiColonne_Immeuble_Commune || "");
+  const occupation = clean(generalInfo.LiColonne_Immeuble_Occupe_vide || "");
+  const date_realisation = clean(generalInfo.LiColonne_Mission_Date_Visite || generalInfo.LiColonne_Gen_Date || "");
+  const opNom = clean(generalInfo.LiColonne_Gen_Nom_operateur || "");
+  const operateur = opNom ? `SOCOTEC ${opNom}` : "";
+  const reference_rapport = clean(generalInfo.LiColonne_Mission_Num_Dossier || generalInfo.LiColonne_Gen_Num_rapport || "");
+
+  const prelevMap = {};
+  (parsed.prelevements || []).forEach(prl => {
+    const zpso = clean(prl.LiColonne_Data_02 || prl.applicabilite_ZPSO || prl.applicabilite_zspo || prl.LiColonne_Id_Prelevement || "");
+    const num = clean(prl.LiColonne_Data_01 || prl.LiColonne_Num_Prelevement || prl.Num_Prelevement || "");
+    if (!zpso || !num) return;
+    if (!prelevMap[zpso]) prelevMap[zpso] = [];
+    prelevMap[zpso].push(num);
+  });
+
+  return (parsed.materiaux || []).map(mat => {
+    const applicabilite_ZPSO = clean(mat.LiColonne_Id_Prelevement || mat.applicabilite_ZPSO || mat.Num_ZPSO || "");
+    const composant_construction = clean(mat.LiColonne_Ouvrages || "");
+    const materiau_produit = clean(mat.LiColonne_Description || "");
+    const resultat = clean(mat.LiColonne_Resultats || "");
+    const etat_conservation = clean(mat.LiColonne_Etat_Conservation || "");
+    const Local_visite = clean(mat.LiColonne_Detail_loc || mat.LiColonne_Localisation || "");
+    const quantite = clean(mat.LiColonne_SurfaceMateriau || "");
+    const unité = clean(mat.LiColonne_SurfaceMateriauUnite || "");
+
+    let prl = [];
+    const raw = clean(mat.LiColonne_num_prelevement || mat.num_prelevement || "");
+    if (raw) {
+      prl = raw.split(";").map(s => clean(s)).filter(Boolean);
+    } else if (prelevMap[applicabilite_ZPSO]) {
+      prl = [...prelevMap[applicabilite_ZPSO]];
+    }
 
     return {
-      Nom_EI: nomEI,
-      Num_UG: numUgFinal,
-      Commune: commune,
-      date_realisation: date,
+      Num_EI,
+      Nom_EI,
+      Num_UG,
+      Commune,
+      Local_visite,
+      Etage: getEtage(Local_visite),
+      occupation,
+      date_realisation,
       operateur,
-      reference_rapport: rapport,
-      Etage: etage,
-      applicabilite_ZPSO: mat.zspo || "",
-      Local_visite: mat.localisation || "",
-      num_prelevement: prelevementIds,
+      reference_rapport,
+      composant_construction,
+      materiau_produit,
+      num_prelevement: buildNumPrelevements(prl, Local_visite),
       resultat,
-      materiau_produit: produit || "Non précisé",
-      zone: mat.ouvrage || "",
-      commentaires: mat.commentaires || ""
+      applicabilite_ZPSO,
+      etat_conservation,
+      quantite,
+      unité,
+      resultat_Hap: ""
     };
   });
 }
