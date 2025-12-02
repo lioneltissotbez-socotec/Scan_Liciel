@@ -27,9 +27,32 @@ const Z_AMIANTE_CHAMPS = [
   "LiColonne_ListeCSP_amiante"
 ];
 
+const NOV_E_HEADERS = [
+  "Num_EI",
+  "Nom_EI",
+  "Num_UG",
+  "Commune",
+  "Local_visite",
+  "Etage",
+  "occupation",
+  "date_realisation",
+  "operateur",
+  "reference_rapport",
+  "composant_construction",
+  "materiau_produit",
+  "num_prelevement",
+  "resultat",
+  "applicabilite_ZPSO",
+  "etat_conservation",
+  "quantite",
+  "unité",
+  "resultat_Hap"
+];
+
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const generateBtn = document.getElementById("generateBtn");
+const importExcelBtn = document.getElementById("importExcelBtn");
 const autoXmlStatus = document.getElementById("autoXmlStatus");
 const jsonModal = document.getElementById("jsonModal");
 const jsonModalBody = document.getElementById("jsonModalBody");
@@ -81,50 +104,132 @@ if (dropZone) {
     dropZone.classList.remove("amiante-dropzone--hover");
   });
 
-  dropZone.addEventListener("drop", e => {
+  dropZone.addEventListener("drop", async e => {
     e.preventDefault();
     dropZone.classList.remove("amiante-dropzone--hover");
     const files = e.dataTransfer.files;
     if (files.length) {
       fileInput.files = files;
-      generateBtn.click();
+      await importerFichier(files[0]);
     }
   });
 }
 
 if (generateBtn) {
-  generateBtn.addEventListener("click", () => {
-    if (!fileInput.files.length) {
-      alert("Merci de sélectionner un fichier JSON généré par Scan LICIEL.");
-      return;
-    }
+  generateBtn.addEventListener("click", () => importerDepuisSelection("json"));
+}
 
-    const file = fileInput.files[0];
-    if (!/\.json$/i.test(file.name)) {
-      alert("Seuls les fichiers .json sont acceptés.");
-      return;
-    }
+if (importExcelBtn) {
+  importExcelBtn.addEventListener("click", () => importerDepuisSelection("excel"));
+}
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const rawText = e.target.result;
-        const parsed = JSON.parse(rawText);
-        const payload = normaliserPayloadJson(parsed);
-        if (!payload || !payload.rows || !payload.rows.length) {
-          alert("Le fichier JSON ne contient aucune ligne exploitable.");
-          return;
-        }
+function importerDepuisSelection(type = "json") {
+  if (!fileInput.files.length) {
+    alert("Merci de sélectionner un fichier JSON ou Excel exporté depuis l'outil Nové.");
+    return;
+  }
 
-        appliquerPayloadAutomatique(payload);
-        alert("Synthèse chargée depuis le fichier JSON.");
-      } catch (err) {
-        console.error("Import JSON impossible", err);
-        alert("Impossible de lire ce JSON. Vérifiez qu'il provient de Scan LICIEL.");
+  const file = fileInput.files[0];
+  const ext = (file.name || "").toLowerCase();
+  if (type === "json" && !ext.endsWith(".json")) {
+    alert("Sélectionnez un fichier .json pour l'import JSON.");
+    return;
+  }
+  if (type === "excel" && !(ext.endsWith(".xlsx") || ext.endsWith(".xls") || ext.endsWith(".csv"))) {
+    alert("Sélectionnez un fichier Excel ou CSV pour l'import tableau.");
+    return;
+  }
+
+  importerFichier(file, type);
+}
+
+async function importerFichier(file, forcedType = null) {
+  const ext = (file?.name || "").toLowerCase();
+  const type = forcedType || (ext.endsWith(".json") ? "json" : "excel");
+
+  if (type === "json") {
+    await importerJson(file);
+  } else if (type === "excel") {
+    await importerExcel(file);
+  } else {
+    alert("Format de fichier non pris en charge. Utilisez un JSON ou un Excel Nové.");
+  }
+}
+
+async function importerJson(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const rawText = e.target.result;
+      const parsed = JSON.parse(rawText);
+      const payload = normaliserPayloadJson(parsed);
+      if (!payload || !payload.rows || !payload.rows.length) {
+        alert("Le fichier JSON ne contient aucune ligne exploitable.");
+        return;
       }
-    };
-    reader.readAsText(file, "utf-8");
-  });
+
+      appliquerPayloadAutomatique(payload);
+      alert("Synthèse chargée depuis le fichier JSON.");
+    } catch (err) {
+      console.error("Import JSON impossible", err);
+      alert("Impossible de lire ce JSON. Vérifiez qu'il provient de Scan LICIEL.");
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
+async function importerExcel(file) {
+  if (typeof XLSX === "undefined") {
+    alert("La librairie de lecture Excel n'est pas disponible.");
+    return;
+  }
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const firstSheet = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[firstSheet];
+    const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    const rows = normaliserRowsDepuisExcel(rawRows);
+
+    if (!rows.length) {
+      alert("Le tableau Excel ne contient aucune ligne exploitable.");
+      return;
+    }
+
+    appliquerPayloadAutomatique({
+      rows,
+      meta: { createdAt: Date.now(), source: "excel-file", label: file.name }
+    });
+    alert("Synthèse chargée depuis le tableau Excel.");
+  } catch (err) {
+    console.error("Import Excel impossible", err);
+    alert("Impossible de lire ce tableau Excel. Vérifiez qu'il provient de l'export Nové.");
+  }
+}
+
+function normaliserRowsDepuisExcel(rows = []) {
+  const variantes = key => {
+    const base = key.toLowerCase();
+    const alternatives = [key, base];
+    if (base.includes("unité")) alternatives.push("unite", "unité", "Unite", "Unité");
+    if (base.includes("applicabilite_zpso")) alternatives.push("applicabilité zpso", "applicabilite zpso");
+    if (base.includes("num_prelevement")) alternatives.push("num prelevement", "num prélèvement", "num prélèvement");
+    if (base.includes("reference_rapport")) alternatives.push("reference rapport", "référence rapport");
+    return Array.from(new Set(alternatives));
+  };
+
+  return rows.map(raw => {
+    const normalise = {};
+    NOV_E_HEADERS.forEach(key => {
+      const possibles = variantes(key);
+      const valeurBrute = possibles.find(k => raw[k] !== undefined)
+        ? raw[possibles.find(k => raw[k] !== undefined)]
+        : raw[key];
+      normalise[key] = nettoyerValeurExtraction(valeurBrute ?? "");
+    });
+    return normalise;
+  }).filter(row => NOV_E_HEADERS.some(k => row[k]));
 }
 
 async function afficherJsonDansModal(path, label = "Fichier JSON") {
@@ -994,6 +1099,12 @@ function transformerElementEnObjet(element, prefix = "") {
   return obj;
 }
 
+function normaliserBooleen(valeur) {
+  if (valeur === undefined || valeur === null) return false;
+  const v = `${valeur}`.trim().toLowerCase();
+  return v === "oui" || v === "true" || v === "1" || v === "x";
+}
+
 function construireSyntheseDepuisXml(parsed) {
   const generalInfo = parsed.general[0] || {};
   const ecarts = parsed.ecarts || [];
@@ -1098,52 +1209,137 @@ function construireSyntheseDepuisXml(parsed) {
   return { ...synthese, sourceGeneral: generalWithFallback };
 }
 
-function convertirSyntheseEnRows(synthese, generalInfo = {}) {
-  const commune = generalInfo.LiColonne_Immeuble_Commune || "";
-  const adresse = generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.LiColonne_Immeuble_Batiment || generalInfo.LiColonne_Immeuble_Nom || "";
-  const missionId = generalInfo.LiColonne_Gen_Num_rapport
-    || generalInfo.LiColonne_Gen_Num_mission
-    || generalInfo.LiColonne_Gen_Num_dossier
-    || generalInfo.LiColonne_Dossier_Materiau;
-  const numUG = missionId
-    || generalInfo.LiColonne_Loc_Lot
-    || generalInfo.LiColonne_Immeuble_Lot
-    || generalInfo.LiColonne_Immeuble_Loc_copro
-    || generalInfo.LiColonne_Loc_Numero
-    || "UG";
-  const date = generalInfo.LiColonne_Gen_Date_rapport || generalInfo.LiColonne_Gen_Date || generalInfo.LiColonne_Gen_Date_mission || "";
-  const operateur = generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.LiColonne_Gen_Operateur || "";
-  const rapport = generalInfo.LiColonne_Gen_Num_rapport || generalInfo.LiColonne_Gen_Numero_rapport || "";
-  const etage = generalInfo.LiColonne_Loc_Etage || generalInfo.LiColonne_Immeuble_Etage || "";
-
-  return (synthese.materiaux || []).map(mat => {
-    const prelevementIds = (mat.prelevements || []).map(p => p.id).filter(Boolean).join(", ");
-    const resultat = mat.resultat || (mat.prelevements && mat.prelevements[0] ? mat.prelevements[0].resultat : "");
-    const nomEI = mat.localisation || adresse || "Adresse non précisée";
-    const produit = mat.description || `${mat.ouvrage || ""} ${mat.partie || ""}`.trim();
-    const numUgFinal = numUG || "UG";
-
-    return {
-      Nom_EI: nomEI,
-      Num_UG: numUgFinal,
-      Commune: commune,
-      date_realisation: date,
-      operateur,
-      reference_rapport: rapport,
-      Etage: etage,
-      applicabilite_ZPSO: mat.zspo || "",
-      Local_visite: mat.localisation || "",
-      num_prelevement: prelevementIds,
-      resultat,
-      materiau_produit: produit || "Non précisé",
-      zone: mat.ouvrage || "",
-      commentaires: mat.commentaires || ""
-    };
-  });
+function nettoyerValeurExtraction(str = "") {
+  return `${str}`.replace(/[\x00-\x1F]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function normaliserBooleen(valeur) {
-  if (valeur === undefined || valeur === null) return false;
-  const v = `${valeur}`.trim().toLowerCase();
-  return v === "oui" || v === "true" || v === "1" || v === "x";
+function construireInfosGeneralesNovE(generalInfo = {}) {
+  const clean = nettoyerValeurExtraction;
+  const Num_EI = clean(generalInfo.LiColonne_Immeuble_Loc_copro || generalInfo.Num_EI || "");
+  const Nom_EI = clean(generalInfo.LiColonne_Immeuble_Adresse1 || generalInfo.Nom_EI || "");
+  const Num_UG = clean(
+    generalInfo.LiColonne_Immeuble_Lot
+    || generalInfo.LiColonne_Loc_Lot
+    || generalInfo.LiColonne_Immeuble_Loc_copro
+    || generalInfo.LiColonne_Loc_Numero
+    || generalInfo.Num_UG
+    || ""
+  );
+  const Commune = clean(generalInfo.LiColonne_Immeuble_Commune || generalInfo.Commune || "");
+  const occupation = clean(generalInfo.LiColonne_Immeuble_Occupe_vide || generalInfo.occupation || "");
+  const date_realisation = clean(
+    generalInfo.LiColonne_Mission_Date_Visite
+    || generalInfo.LiColonne_Gen_Date
+    || generalInfo.LiColonne_Gen_Date_mission
+    || generalInfo.date_realisation
+    || ""
+  );
+  const opNom = clean(generalInfo.LiColonne_Gen_Nom_operateur || generalInfo.operateur || "");
+  const operateur = opNom ? `SOCOTEC ${opNom}` : "";
+  const reference_rapport = clean(
+    generalInfo.LiColonne_Mission_Num_Dossier
+    || generalInfo.LiColonne_Gen_Num_rapport
+    || generalInfo.reference_rapport
+    || ""
+  );
+
+  return { Num_EI, Nom_EI, Num_UG, Commune, occupation, date_realisation, operateur, reference_rapport };
+}
+
+function construirePrelevementMap(prelevements = []) {
+  const map = {};
+  prelevements.forEach(prl => {
+    const zpso = nettoyerValeurExtraction(
+      prl.LiColonne_Data_02
+      || prl.applicabilite_ZPSO
+      || prl.applicabilite_zspo
+      || prl.LiColonne_Id_Prelevement
+      || prl.Num_ZPSO
+      || ""
+    );
+    const num = nettoyerValeurExtraction(prl.LiColonne_Data_01 || prl.LiColonne_Num_Prelevement || prl.Num_Prelevement || "");
+    if (!zpso || !num) return;
+    if (!map[zpso]) map[zpso] = [];
+    map[zpso].push(num);
+  });
+  return map;
+}
+
+function formatterNumPrelevements(list, loc) {
+  if (!list || !list.length) return "";
+  const parts = `${loc || ""}`.split(";").map(s => nettoyerValeurExtraction(s)).filter(Boolean);
+  if (parts.length === list.length) return list.map((p, i) => `${p} (${parts[i]})`).join(";");
+  const last = parts[parts.length - 1] || "";
+  return list.map((p, i) => `${p} (${parts[i] || last})`).join(";");
+}
+
+function extraireEtageDepuisLocalisation(loc) {
+  const first = `${loc || ""}`.split(";")[0];
+  return nettoyerValeurExtraction(first.split("-")[0]);
+}
+
+function construireLigneDepuisMateriau(mat = {}, infoGenerales = {}, prelevMap = {}) {
+  const applicabilite_ZPSO = nettoyerValeurExtraction(mat.LiColonne_Id_Prelevement || mat.applicabilite_ZPSO || mat.Num_ZPSO || "");
+  const Local_visite = nettoyerValeurExtraction(mat.LiColonne_Detail_loc || mat.LiColonne_Localisation || mat.Local_visite || "");
+
+  let prl = [];
+  const raw = nettoyerValeurExtraction(mat.LiColonne_num_prelevement || mat.num_prelevement || "");
+  if (raw) {
+    prl = raw.split(";").map(s => nettoyerValeurExtraction(s)).filter(Boolean);
+  } else if (prelevMap[applicabilite_ZPSO]) {
+    prl = [...prelevMap[applicabilite_ZPSO]];
+  }
+
+  return {
+    ...infoGenerales,
+    Local_visite,
+    Etage: extraireEtageDepuisLocalisation(Local_visite),
+    occupation: infoGenerales.occupation,
+    date_realisation: infoGenerales.date_realisation,
+    operateur: infoGenerales.operateur,
+    reference_rapport: infoGenerales.reference_rapport,
+    composant_construction: nettoyerValeurExtraction(mat.LiColonne_Ouvrages || mat.composant_construction || ""),
+    materiau_produit: nettoyerValeurExtraction(mat.LiColonne_Description || mat.materiau_produit || ""),
+    num_prelevement: formatterNumPrelevements(prl, Local_visite),
+    resultat: nettoyerValeurExtraction(mat.LiColonne_Resultats || mat.resultat || ""),
+    applicabilite_ZPSO,
+    etat_conservation: nettoyerValeurExtraction(mat.LiColonne_Etat_Conservation || mat.etat_conservation || ""),
+    quantite: nettoyerValeurExtraction(mat.LiColonne_SurfaceMateriau || mat.quantite || ""),
+    unité: nettoyerValeurExtraction(mat.LiColonne_SurfaceMateriauUnite || mat.unité || mat.unite || ""),
+    resultat_Hap: nettoyerValeurExtraction(mat.resultat_Hap || "")
+  };
+}
+
+function convertirAmianteTablesEnRows(parsed, generalInfo = {}) {
+  const infoGenerales = construireInfosGeneralesNovE(generalInfo);
+  const prelevMap = construirePrelevementMap(parsed.prelevements || []);
+  return (parsed.materiaux || []).map(mat => construireLigneDepuisMateriau(mat, infoGenerales, prelevMap));
+}
+
+function convertirSyntheseEnRows(synthese, generalInfo = {}) {
+  const infoGenerales = construireInfosGeneralesNovE(generalInfo);
+
+  return (synthese.materiaux || []).map(mat => {
+    const Local_visite = nettoyerValeurExtraction(mat.localisation || mat.Local_visite || "");
+    const prelevements = (mat.prelevements || []).map(p => nettoyerValeurExtraction(p.id || p.Num_Prelevement || "")).filter(Boolean);
+
+    return {
+      ...infoGenerales,
+      Local_visite,
+      Etage: extraireEtageDepuisLocalisation(Local_visite),
+      occupation: infoGenerales.occupation,
+      date_realisation: infoGenerales.date_realisation,
+      operateur: infoGenerales.operateur,
+      reference_rapport: infoGenerales.reference_rapport,
+      composant_construction: nettoyerValeurExtraction(mat.ouvrage || mat.composant_construction || ""),
+      materiau_produit: nettoyerValeurExtraction(mat.description || mat.materiau_produit || ""),
+      num_prelevement: formatterNumPrelevements(prelevements, Local_visite),
+      resultat: nettoyerValeurExtraction(mat.resultat || ""),
+      applicabilite_ZPSO: nettoyerValeurExtraction(mat.zspo || mat.Num_ZPSO || ""),
+      etat_conservation: nettoyerValeurExtraction(mat.etat_conservation || ""),
+      quantite: nettoyerValeurExtraction(mat.quantite || ""),
+      unité: nettoyerValeurExtraction(mat.unité || mat.unite || ""),
+      resultat_Hap: nettoyerValeurExtraction(mat.resultat_Hap || "")
+    };
+  });
 }
