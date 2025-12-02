@@ -28,6 +28,14 @@ const FILTERS = [
   { key: "rue", label: "Rue" },
 ];
 
+function formatFilterLabel(filter) {
+  if (!filter || !filter.type) return null;
+  const def = FILTERS.find(f => f.key === filter.type);
+  const label = def?.label || filter.type;
+  const value = filter.value !== undefined ? filter.value : "Tous";
+  return `${label} : ${value || "Tous"}`;
+}
+
 const MISSION_TYPES = {
   amiante: "Amiante",
   plomb: "Plomb",
@@ -43,6 +51,7 @@ let missions = [];
 let currentFilterType = null;
 let currentFilterValue = null;
 let selectedTypes = new Set();
+let adminFilterLock = null;
 
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("pickParent").addEventListener("click", handlePickParent);
@@ -60,9 +69,13 @@ function chargerMissionsAutomatiques() {
     if (!Array.isArray(payload.missions) || !payload.missions.length) return;
 
     missions = payload.missions;
-    currentFilterType = null;
-    currentFilterValue = null;
+    currentFilterType = payload?.meta?.filter?.type || null;
+    currentFilterValue = payload?.meta?.filter?.value ?? null;
     selectedTypes.clear();
+
+    adminFilterLock = payload?.meta?.source === "admin"
+      ? (payload?.meta?.filter || { type: null, value: null })
+      : null;
 
     renderFilterButtons();
     renderFilterValues();
@@ -71,10 +84,14 @@ function chargerMissionsAutomatiques() {
     renderAmiantePreview();
 
     const status = document.getElementById("status");
-    const label = payload?.meta?.filter
-      ? `${(FILTERS.find(f => f.key === payload.meta.filter.type) || {}).label || payload.meta.filter.type} : ${payload.meta.filter.value || "Tous"}`
-      : "module administratif";
+    const label = formatFilterLabel(payload?.meta?.filter) || "module administratif";
     status.textContent = `✔ ${missions.length} mission(s) reçue(s) depuis le ${label}`;
+
+    const pickParent = document.getElementById("pickParent");
+    if (pickParent && adminFilterLock) {
+      pickParent.disabled = true;
+      pickParent.textContent = "Missions fournies par admin";
+    }
   } catch (err) {
     console.error("Impossible d'utiliser les missions pré-chargées", err);
   }
@@ -99,6 +116,7 @@ async function handlePickParent() {
     currentFilterType = null;
     currentFilterValue = null;
     selectedTypes.clear();
+    adminFilterLock = null;
 
     renderFilterButtons();
     renderFilterValues();
@@ -461,6 +479,15 @@ function renderFilterButtons() {
   const container = document.getElementById("filterButtons");
   container.innerHTML = "";
 
+  if (adminFilterLock) {
+    const info = document.createElement("div");
+    info.className = "small-muted";
+    const label = formatFilterLabel(adminFilterLock) || "filtres admin";
+    info.textContent = `Filtre appliqué depuis admin : ${label}.`;
+    container.appendChild(info);
+    return;
+  }
+
   FILTERS.forEach(f => {
     const count = new Set(missions.map(m => getField(m, f.key)).filter(Boolean)).size;
     const btn = document.createElement("button");
@@ -483,6 +510,11 @@ function renderFilterValues() {
   const block = document.getElementById("filterValuesBlock");
   const valuesContainer = document.getElementById("filterValues");
   const title = document.getElementById("filterValuesTitle");
+
+  if (adminFilterLock) {
+    block.style.display = "none";
+    return;
+  }
 
   if (!currentFilterType) {
     block.style.display = "none";
@@ -549,6 +581,7 @@ function renderTypeFilters() {
     wrapper.className = "chip";
     const input = document.createElement("input");
     input.type = "checkbox";
+    input.disabled = !!adminFilterLock;
     input.checked = selectedTypes.has(label);
     input.onchange = () => {
       if (input.checked) selectedTypes.add(label); else selectedTypes.delete(label);
@@ -663,9 +696,11 @@ function exportFilteredToSynthese() {
     tables: null,
     meta: {
       id: "missions-filtrees",
-      label: currentFilterType
-        ? `${(FILTERS.find(f => f.key === currentFilterType) || {}).label || currentFilterType} : ${currentFilterValue || "toutes"}`
-        : `${list.length} mission(s)`,
+      label: adminFilterLock
+        ? formatFilterLabel(adminFilterLock)
+        : currentFilterType
+          ? `${(FILTERS.find(f => f.key === currentFilterType) || {}).label || currentFilterType} : ${currentFilterValue || "toutes"}`
+          : `${list.length} mission(s)`,
       createdAt: Date.now(),
       source: "analyse-missions"
     }
