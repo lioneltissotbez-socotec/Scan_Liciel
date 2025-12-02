@@ -1035,35 +1035,62 @@ function construireSyntheseDepuisXml(parsed) {
       so: normaliserBooleen(item.SO || item.so || item.SansObjet)
     })),
     materiaux: materiaux.map(mat => {
-      const numMat = mat.Num_Materiau || mat.Num_materiau || mat.num_materiau || mat.NumMateriau || mat.Num_Mat;
-      const zspo = mat.ZPSO || mat.applicabilite_ZPSO || mat.Applicabilite_ZPSO || mat.applicabilite_zspo || mat.Num_ZPSO;
+      const numMat = mat.Num_Materiau
+        || mat.Num_materiau
+        || mat.num_materiau
+        || mat.NumMateriau
+        || mat.Num_Mat
+        || mat.LiColonne_Reperage_3
+        || mat.LiColonne_Id_Prelevement;
+      const zspo = mat.ZPSO
+        || mat.applicabilite_ZPSO
+        || mat.Applicabilite_ZPSO
+        || mat.applicabilite_zspo
+        || mat.Num_ZPSO
+        || mat.LiColonne_Id_Prelevement;
       const prelevementsAssocies = prelevements
         .filter(p => {
-          const pMat = p.Num_Materiau || p.Num_materiau || p.NumMat || p.Num_mate;
+          const pMat = p.Num_Materiau
+            || p.Num_materiau
+            || p.NumMat
+            || p.Num_mate
+            || p.LiColonne_Num_Materiau
+            || p.LiColonne_Reperage_3;
           return numMat && pMat && `${pMat}`.trim() === `${numMat}`.trim();
         })
         .map(p => {
-          const resLabo = p.Resultat_reperage || p.resultat_reperage || p.Conclusion || p.Resultat || p["API_Labo_DATA_XML.conclusion_text"] || p.conclusion_text || "";
-          const commentaireLabo = p.Commentaires || p.commentaire || p["API_Labo_DATA_XML.commentaire"] || "";
+          const resLabo = p.Resultat_reperage
+            || p.resultat_reperage
+            || p.LiColonne_Resultat_reperage
+            || p.Conclusion
+            || p.Resultat
+            || p["API_Labo_DATA_XML.conclusion_text"]
+            || p.conclusion_text
+            || "";
+          const commentaireLabo = p.Commentaires
+            || p.commentaire
+            || p.LiColonne_Commentaires_Labo
+            || p["API_Labo_DATA_XML.commentaire"]
+            || "";
           return {
-            id: p.Num_Prelevement || p.num_prelevement || p.Id || "",
+            id: p.Num_Prelevement || p.LiColonne_Num_Prelevement || p.num_prelevement || p.Id || "",
             resultat: resLabo,
             commentaires_labo: commentaireLabo,
-            pv: p.PV || p.pv || p.Justificatif || ""
+            pv: p.PV || p.pv || p.Justificatif || p.LiColonne_PV_Analyse_Lie || ""
           };
         });
 
       return {
-        localisation: mat.Local_visite || mat.Localisation || mat.Zone || "",
-        ouvrage: mat.Ouvrage || mat.Ouvrage_porteur || mat.Ouvrage_support || "",
-        partie: mat.Partie || mat.Partie_inspectee || mat.Partie_observee || "",
-        description: mat.materiau_produit || mat.Materiau || mat.Description || "",
+        localisation: mat.Local_visite || mat.Localisation || mat.LiColonne_Localisation || mat.Zone || "",
+        ouvrage: mat.Ouvrage || mat.Ouvrage_porteur || mat.Ouvrage_support || mat.LiColonne_Ouvrages || "",
+        partie: mat.Partie || mat.Partie_inspectee || mat.Partie_observee || mat.LiColonne_Partie_Inspectee || "",
+        description: mat.materiau_produit || mat.Materiau || mat.Description || mat.LiColonne_Description || "",
         zspo: zspo || (numMat ? `${(generalInfo.prefix_ZPSO || generalInfo.Prefix_ZPSO || "ZPSO-")}${numMat}` : ""),
-        resultat: mat.resultat || mat.Resultat || mat.Resultat_reperage || "",
-        justification: mat.Justification || mat.Mode_operatoire || mat.Mode || "",
+        resultat: mat.resultat || mat.Resultat || mat.Resultat_reperage || mat.LiColonne_Resultats || "",
+        justification: mat.Justification || mat.Mode_operatoire || mat.Mode || mat.LiColonne_Justification || "",
         prelevements: prelevementsAssocies,
-        commentaires: mat.commentaires || mat.Commentaire || "",
-        photos: mat.photos || mat.Photo || mat.PJ || ""
+        commentaires: mat.commentaires || mat.Commentaire || mat.LiColonne_Commentaire_Etat_Degradation || "",
+        photos: mat.photos || mat.Photo || mat.PJ || mat.LiColonne_Photo || ""
       };
     })
   };
