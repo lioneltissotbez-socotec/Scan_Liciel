@@ -6,6 +6,8 @@ let currentFilterType = null;   // 'donneur' | 'proprietaire' | ...
 let currentFilterValue = null;  // valeur sélectionnée pour le filtre
 let selectedDomains = new Set();
 let openedDetailId = null;
+let scanProgressBar = null;
+let scanProgressLabel = null;
 
 const DOMAIN_FILES = {
   "table_z_elec_general.xml": "Électricité",
@@ -22,6 +24,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const rootBtn = document.getElementById("pickRoot");
   const openAmianteFilteredBtn = document.getElementById("openAmianteFiltered");
   const openAnalyseMissionsBtn = document.getElementById("openAnalyseMissions");
+  scanProgressBar = document.getElementById("scanProgress");
+  scanProgressLabel = document.getElementById("progressLabel");
   if (!rootBtn) {
     console.error("⛔ Bouton #pickRoot introuvable dans la page admin.html");
     return;
@@ -33,11 +37,29 @@ window.addEventListener("DOMContentLoaded", () => {
       const rootHandle = await window.showDirectoryPicker();
       const prefix = (document.getElementById("prefixInput")?.value || "").trim();
 
+      const eligibleFolders = await collectEligibleFolders(rootHandle, prefix);
       document.getElementById("rootInfo").textContent =
-        `📁 Dossier racine : ${rootHandle.name}${prefix ? ` · Préfixe : ${prefix}` : ""}`;
+        `📁 Dossier racine : ${rootHandle.name}${prefix ? ` · Préfixe : ${prefix}` : ""} · ${eligibleFolders.length} dossier(s)`;
+
+      if (!eligibleFolders.length) {
+        alert("Aucun dossier à scanner avec ce préfixe.");
+        resetProgressBar();
+        return;
+      }
+
+      const confirmed = window.confirm(`Voulez-vous vraiment scanner ces ${eligibleFolders.length} dossiers ?`);
+      if (!confirmed) {
+        resetProgressBar();
+        return;
+      }
+
+      resetProgressBar(eligibleFolders.length);
 
       // Scan
-      const missions = await scanRootFolder(rootHandle, prefix);
+      const missions = await scanRootFolder(rootHandle, prefix, {
+        foldersToScan: eligibleFolders,
+        onProgress: updateProgressBar
+      });
       allMissions = missions;    // ✅ IMPORTANT : on met à jour la variable globale, PAS window.allMissions
       selectedDomains.clear();
 
@@ -130,18 +152,55 @@ async function readFileCorrectly(fileHandle) {
   return new TextDecoder("windows-1252").decode(buffer);
 }
 
-async function scanRootFolder(rootHandle, prefix = "") {
-  const missions = [];
+async function collectEligibleFolders(rootHandle, prefix = "") {
   const normalizedPrefix = (prefix || "").trim();
+  const folders = [];
 
   for await (const [name, handle] of rootHandle.entries()) {
     if (handle.kind !== "directory") continue;
     if (normalizedPrefix && !name.startsWith(normalizedPrefix)) continue;
+    folders.push({ name, handle });
+  }
 
+  return folders;
+}
+
+async function scanRootFolder(rootHandle, prefix = "", options = {}) {
+  const missions = [];
+  const normalizedPrefix = (prefix || "").trim();
+  const folders = options.foldersToScan || await collectEligibleFolders(rootHandle, normalizedPrefix);
+  let scanned = 0;
+  const total = folders.length;
+
+  for (const { name, handle } of folders) {
     const mission = await parseMissionDirectory(handle, name);
     if (mission) missions.push(mission);
+    scanned++;
+    if (typeof options.onProgress === "function") {
+      options.onProgress(scanned, total);
+    }
   }
   return missions;
+}
+
+function resetProgressBar(total = 0) {
+  if (scanProgressBar) {
+    scanProgressBar.max = total;
+    scanProgressBar.value = 0;
+  }
+  if (scanProgressLabel) {
+    scanProgressLabel.textContent = total ? `0 / ${total} dossiers scannés` : "";
+  }
+}
+
+function updateProgressBar(scanned, total) {
+  if (scanProgressBar) {
+    scanProgressBar.max = total;
+    scanProgressBar.value = scanned;
+  }
+  if (scanProgressLabel) {
+    scanProgressLabel.textContent = `${scanned} / ${total} dossiers scannés`;
+  }
 }
 
 async function parseMissionDirectory(dirHandle, folderName) {

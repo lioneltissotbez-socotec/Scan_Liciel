@@ -119,6 +119,17 @@ button:disabled {
   color: #6b7280;
 }
 
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#scanProgress {
+  width: 100%;
+  height: 18px;
+}
+
 /* ========== FILTERS ========== */
 .filter-buttons {
   display: flex;
