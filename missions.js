@@ -68,7 +68,7 @@ function chargerMissionsAutomatiques() {
   try {
     if (!Array.isArray(payload.missions) || !payload.missions.length) return;
 
-    missions = payload.missions;
+    missions = payload.missions.map(normaliserMissionImportee);
     currentFilterType = payload?.meta?.filter?.type || null;
     currentFilterValue = payload?.meta?.filter?.value ?? null;
     selectedTypes.clear();
@@ -95,6 +95,40 @@ function chargerMissionsAutomatiques() {
   } catch (err) {
     console.error("Impossible d'utiliser les missions pré-chargées", err);
   }
+}
+
+function normaliserMissionImportee(mission) {
+  const g = mission.general || {};
+
+  const general = {
+    donneur: g.donneur || g.LiColonne_DOrdre_Nom || "",
+    proprietaire: g.proprietaire || g.LiColonne_Prop_Nom || "",
+    diagnostiqueur: g.diagnostiqueur || g.LiColonne_Gen_Nom_operateur || "",
+    ville: g.ville || g.LiColonne_Immeuble_Commune || "",
+    rue: g.rue || g.LiColonne_Immeuble_Adresse1 || "",
+    numEI: g.numEI || g.LiColonne_Immeuble_Loc_copro || "",
+    nomEI: g.nomEI || g.LiColonne_Immeuble_Adresse1 || "",
+    numUG: g.numUG || g.LiColonne_Immeuble_Lot || "",
+    occupation: g.occupation || g.LiColonne_Immeuble_Occupe_vide || "",
+    dateVisite: g.dateVisite || g.LiColonne_Mission_Date_Visite || "",
+    operateur: g.operateur || g.LiColonne_Gen_Nom_operateur || "",
+    reference: g.reference || g.LiColonne_Mission_Num_Dossier || ""
+  };
+
+  let missionTypes = Array.isArray(mission.missionTypes) ? mission.missionTypes.slice() : [];
+  if (!missionTypes.length && Array.isArray(mission.domains)) {
+    missionTypes = mission.domains.filter(Boolean);
+  }
+  if (mission.amianteRows && mission.amianteRows.length && !missionTypes.includes(MISSION_TYPES.amiante)) {
+    missionTypes.push(MISSION_TYPES.amiante);
+  }
+
+  return {
+    ...mission,
+    general,
+    missionTypes,
+    amianteRows: Array.isArray(mission.amianteRows) ? mission.amianteRows : []
+  };
 }
 
 async function handlePickParent() {
