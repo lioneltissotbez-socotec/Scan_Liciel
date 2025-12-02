@@ -20,6 +20,11 @@
       <section class="card">
         <h2>1. Dossier parent</h2>
         <p class="muted">Sélectionnez le dossier qui contient les sous-dossiers de missions.</p>
+        <div class="form-field">
+          <label for="prefixInput">Préfixe des dossiers (optionnel)</label>
+          <input id="prefixInput" type="text" placeholder="Ex : ABCD ou 2024" />
+          <p class="small-muted">Laisse vide pour scanner tous les dossiers.</p>
+        </div>
         <button id="pickParent" class="primary-btn">Choisir un dossier</button>
         <p id="parentInfo" class="muted"></p>
       </section>
@@ -46,6 +51,10 @@
           <div>
             <h2>Missions détectées</h2>
             <p id="status" class="muted">En attente d'un dossier…</p>
+            <div id="progressContainer" class="progress-block" style="display:none;">
+              <div class="progress-label" id="progressLabel"></div>
+              <progress id="scanProgress" value="0" max="1"></progress>
+            </div>
           </div>
           <div class="card-header-actions">
             <span id="missionsCount" class="badge">0 mission</span>

@@ -82,12 +82,20 @@ function chargerMissionsAutomatiques() {
 
 async function handlePickParent() {
   const status = document.getElementById("status");
+  resetProgressBar();
   try {
     const parent = await window.showDirectoryPicker();
     document.getElementById("parentInfo").textContent = `📁 ${parent.name}`;
-    status.textContent = "Analyse des sous-dossiers en cours…";
+    const prefix = (document.getElementById("prefixInput")?.value || "").trim();
+    status.textContent = "Pré-scan des sous-dossiers en cours…";
 
-    missions = await scanParentDirectory(parent);
+    const result = await scanParentDirectory(parent, prefix, status);
+    if (result.cancelled) {
+      status.textContent = "Scan annulé par l'utilisateur.";
+      return;
+    }
+
+    missions = result.missions;
     currentFilterType = null;
     currentFilterValue = null;
     selectedTypes.clear();
@@ -100,9 +108,14 @@ async function handlePickParent() {
 
     status.textContent = missions.length
       ? `✔ ${missions.length} mission(s) analysée(s)`
-      : "Aucune mission LICIEL valide trouvée";
+      : result.eligibleCount
+        ? "Aucune mission LICIEL valide trouvée"
+        : prefix
+          ? "Aucun dossier ne correspond au préfixe fourni."
+          : "Aucun sous-dossier détecté pour l'analyse.";
   } catch (err) {
     console.warn("Sélection annulée ou erreur", err);
+    resetProgressBar();
   }
 }
 
@@ -133,14 +146,84 @@ function lirePayloadMissions() {
   }
 }
 
-async function scanParentDirectory(parentHandle) {
+async function scanParentDirectory(parentHandle, prefix, statusEl) {
+  const eligibleFolders = await listEligibleFolders(parentHandle, prefix);
+  const result = { missions: [], eligibleCount: eligibleFolders.length, cancelled: false };
+  if (!eligibleFolders.length) return result;
+
+  const confirmed = window.confirm(`Voulez-vous vraiment scanner ces ${eligibleFolders.length} dossier(s) ?`);
+  if (!confirmed) {
+    resetProgressBar();
+    result.cancelled = true;
+    return result;
+  }
+
+  result.missions = await scanEligibleFolders(eligibleFolders, statusEl);
+  return result;
+}
+
+async function listEligibleFolders(parentHandle, prefix) {
   const list = [];
+  const normalizedPrefix = (prefix || "").trim();
   for await (const [name, handle] of parentHandle.entries()) {
     if (handle.kind !== "directory") continue;
-    const mission = await parseMission(handle, name);
-    if (mission) list.push(mission);
+    if (normalizedPrefix && !name.startsWith(normalizedPrefix)) continue;
+    list.push({ name, handle });
   }
   return list;
+}
+
+async function scanEligibleFolders(folders, statusEl) {
+  const missionsList = [];
+  const total = folders.length;
+  startProgressBar(total);
+
+  let scanned = 0;
+  for (const folder of folders) {
+    const mission = await parseMission(folder.handle, folder.name);
+    if (mission) missionsList.push(mission);
+    scanned += 1;
+    updateProgressBar(scanned, total);
+    if (statusEl) statusEl.textContent = `Analyse en cours… ${scanned}/${total}`;
+  }
+
+  return missionsList;
+}
+
+function startProgressBar(total) {
+  const container = document.getElementById("progressContainer");
+  const progress = document.getElementById("scanProgress");
+  const label = document.getElementById("progressLabel");
+  if (!container || !progress || !label) return;
+
+  container.style.display = "block";
+  progress.max = Math.max(total, 1);
+  progress.value = 0;
+  label.textContent = `Progression : 0 / ${total} dossier(s)`;
+}
+
+function updateProgressBar(scanned, total) {
+  const container = document.getElementById("progressContainer");
+  const progress = document.getElementById("scanProgress");
+  const label = document.getElementById("progressLabel");
+  if (!container || !progress || !label) return;
+
+  container.style.display = "block";
+  progress.max = Math.max(total, 1);
+  progress.value = scanned;
+  label.textContent = `Progression : ${scanned} / ${total} dossier(s)`;
+}
+
+function resetProgressBar() {
+  const container = document.getElementById("progressContainer");
+  const progress = document.getElementById("scanProgress");
+  const label = document.getElementById("progressLabel");
+  if (!container || !progress || !label) return;
+
+  container.style.display = "none";
+  progress.value = 0;
+  progress.max = 1;
+  label.textContent = "";
 }
 
 async function parseMission(dirHandle, label) {
