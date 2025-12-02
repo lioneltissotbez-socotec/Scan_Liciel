@@ -31,12 +31,13 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       // Ouvre le sélecteur de dossier
       const rootHandle = await window.showDirectoryPicker();
+      const prefix = (document.getElementById("prefixInput")?.value || "").trim();
 
       document.getElementById("rootInfo").textContent =
-        "📁 Dossier racine : " + rootHandle.name;
+        `📁 Dossier racine : ${rootHandle.name}${prefix ? ` · Préfixe : ${prefix}` : ""}`;
 
       // Scan
-      const missions = await scanRootFolder(rootHandle);
+      const missions = await scanRootFolder(rootHandle, prefix);
       allMissions = missions;    // ✅ IMPORTANT : on met à jour la variable globale, PAS window.allMissions
       selectedDomains.clear();
 
@@ -129,14 +130,16 @@ async function readFileCorrectly(fileHandle) {
   return new TextDecoder("windows-1252").decode(buffer);
 }
 
-async function scanRootFolder(rootHandle) {
+async function scanRootFolder(rootHandle, prefix = "") {
   const missions = [];
+  const normalizedPrefix = (prefix || "").trim();
 
   for await (const [name, handle] of rootHandle.entries()) {
-    if (handle.kind === "directory") {
-      const mission = await parseMissionDirectory(handle, name);
-      if (mission) missions.push(mission);
-    }
+    if (handle.kind !== "directory") continue;
+    if (normalizedPrefix && !name.startsWith(normalizedPrefix)) continue;
+
+    const mission = await parseMissionDirectory(handle, name);
+    if (mission) missions.push(mission);
   }
   return missions;
 }
